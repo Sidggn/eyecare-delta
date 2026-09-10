@@ -1,0 +1,6 @@
+{
+  "name": "eyecare - Sunglass Configurator",
+  "description": "Configure and preview your custom sunglasses.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
