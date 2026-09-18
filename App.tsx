@@ -626,6 +626,7 @@ function ThreeDGlasses({ cfg, rotation }: { cfg: any, rotation: number }) {
 --------------------------------------------------------- */
 export default function App() {
   const [activeTab, setActiveTab] = useState(TABS[0]);
+  const [showThankYou, setShowThankYou] = useState(false);
   const [rotation, setRotation] = useState(0); // 3D View Angle
   
   // Configuration State
@@ -833,6 +834,13 @@ export default function App() {
                     className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-shadow"
                   />
                   <p className="text-xs text-gray-500 mt-2">Add a name to customise your frame.</p>
+                  <button
+                    type="button"
+                    onClick={() => setShowThankYou(true)}
+                    className="mt-5 w-full rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+                  >
+                    Click here to proceed
+                  </button>
                 </div>
               </div>
             )}
@@ -1150,6 +1158,33 @@ export default function App() {
           </div>
         </div>
       </div>
+
+      {showThankYou && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 p-4"
+          role="presentation"
+          onClick={() => setShowThankYou(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="thank-you-title"
+            className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 id="thank-you-title" className="text-lg font-semibold text-gray-900">
+              Thank you for customising your sunglass
+            </h2>
+            <button
+              type="button"
+              onClick={() => setShowThankYou(false)}
+              className="mt-5 rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
       <style>{`
         :root { --scale: 0.5; }
         @media (min-width: 360px) { :root { --scale: 0.55; } }
