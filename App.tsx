@@ -165,7 +165,7 @@ const CLOTH_COLORS = [
   { id: "brand", label: "eyecare Blue" },
 ];
 
-const TABS = ["Frame", "Lenses", "Temples", "Hardware", "Fit & Sizing", "Personalize", "Extras"];
+const TABS = ["Frame Name", "Fitting", "Shade Color", "Customised Name"];
 
 /* ---------------------------------------------------------
    SVG PATHS & UTILS
@@ -659,6 +659,7 @@ export default function App() {
     size: "M",
     faceShape: "any",
     
+    frameName: "",
     engraveName: "",
     engraveFont: "minimal",
     engraveColor: "natural",
@@ -777,7 +778,68 @@ export default function App() {
         <div className="flex-1 md:overflow-y-auto p-4 md:p-10 pb-20 md:pb-24 bg-white custom-scrollbar">
           <div className="max-w-xl mx-auto space-y-10">
             
-            {/* --- TAB: FRAME --- */}
+            {/* --- LOW CUSTOMISATION --- */}
+            {activeTab === "Frame Name" && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div>
+                  <SectionTitle>Frame Name</SectionTitle>
+                  <input
+                    type="text"
+                    maxLength={40}
+                    placeholder="e.g. Everyday Classic"
+                    value={cfg.frameName}
+                    onChange={(e) => updateCfg("frameName")(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-shadow"
+                  />
+                  <p className="text-xs text-gray-500 mt-2">Give your frame a simple name.</p>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "Fitting" && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div>
+                  <SectionTitle>Fitting</SectionTitle>
+                  <div className="space-y-3">
+                    {SIZES.map((size) => (
+                      <OptionCard key={size.id} label={size.label} sub={size.sub} selected={cfg.size === size.id} onClick={() => updateCfg("size")(size.id)} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "Shade Color" && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div>
+                  <SectionTitle>Shade Color</SectionTitle>
+                  <div className="flex flex-wrap gap-4">
+                    {LENS_COLORS.map((color) => (
+                      <Swatch key={color.id} hex={color.hex} label={color.label} selected={cfg.lensColor === color.id} onClick={() => updateCfg("lensColor")(color.id)} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "Customised Name" && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div>
+                  <SectionTitle>Customised Name</SectionTitle>
+                  <input
+                    type="text"
+                    maxLength={20}
+                    placeholder="e.g. ALEX M."
+                    value={cfg.engraveName}
+                    onChange={(e) => updateCfg("engraveName")(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-shadow"
+                  />
+                  <p className="text-xs text-gray-500 mt-2">Add a name to customise your frame.</p>
+                </div>
+              </div>
+            )}
+
+            {/* --- LEGACY DETAIL TABS (kept for existing preview configuration) --- */}
             {activeTab === "Frame" && (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div>
