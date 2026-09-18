@@ -167,7 +167,7 @@ const LENS_PATHS: Record<string, string> = {
   wayfarer: "M70,68 L246,53 Q270,53 271,80 L262,172 Q259,193 233,197 L92,206 Q66,204 63,180 L64,93 Q65,73 70,68 Z",
   aviator: "M65,77 Q66,44 102,40 L233,46 Q267,52 270,92 Q276,150 236,190 Q196,214 150,206 Q92,196 71,151 Q59,111 65,77 Z",
   round: "M160,130 m-96,0 a96,96 0 1,0 192,0 a96,96 0 1,0 -192,0",
-  catEye: "M45,102 L92,54 Q132,34 191,44 Q251,55 256,111 Q259,161 220,191 Q180,211 119,206 Q69,201 54,161 Q39,130 45,102 Z",
+  catEye: "M42,92 Q48,48 94,42 Q145,40 198,58 Q238,70 258,104 Q260,151 228,187 Q194,214 143,207 Q88,199 59,166 Q38,137 42,92 Z",
   rectangular: "M70,80 L250,80 Q265,80 265,95 L260,170 Q255,185 240,185 L80,185 Q65,185 65,170 L70,95 Q70,80 85,80 Z",
   hexagonal: "M110,60 L210,60 L260,120 L210,190 L110,190 L60,120 Z",
   oversized: "M60,50 L260,50 Q280,50 280,80 L270,190 Q265,220 230,220 L90,220 Q55,220 50,190 L50,80 Q50,50 60,50 Z",
@@ -627,7 +627,7 @@ export default function App() {
   
   // Configuration State
   const [cfg, setCfg] = useState({
-    shape: "aviator",
+    shape: "catEye",
     frameColor: "matte-black",
     material: "acetate",
     finish: "matte",
