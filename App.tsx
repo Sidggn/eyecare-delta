@@ -631,6 +631,8 @@ function ThreeDGlasses({ cfg, rotation }: { cfg: any, rotation: number }) {
 export default function App() {
   const [activeTab, setActiveTab] = useState(TABS[0]);
   const [rotation, setRotation] = useState(0); // 3D View Angle
+  const [isComplete, setIsComplete] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
   
   // Configuration State
   const [cfg, setCfg] = useState({
@@ -673,6 +675,51 @@ export default function App() {
   });
 
   const updateCfg = (key: string) => (val: any) => setCfg(prev => ({ ...prev, [key]: val }));
+
+  if (isComplete) {
+    return (
+      <main className="min-h-screen bg-[#f6f8fb] px-5 py-8 text-gray-900 sm:px-8 sm:py-12">
+        <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-2xl items-center justify-center">
+          <section className="w-full overflow-hidden rounded-[2rem] border border-gray-200 bg-white shadow-[0_24px_80px_rgba(15,23,42,0.12)]">
+            <div className="bg-gray-950 px-6 py-8 text-white sm:px-10 sm:py-12">
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-blue-500 text-2xl shadow-lg shadow-blue-500/30" aria-hidden="true">
+                <Check size={28} strokeWidth={3} />
+              </div>
+              <p className="mb-3 text-xs font-bold uppercase tracking-[0.25em] text-blue-300">eyecare custom studio</p>
+              <h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">Yeah! Thank you for customising your product.</h1>
+              <p className="mt-4 max-w-lg text-sm leading-6 text-gray-300 sm:text-base">Your choices are saved. Take one more look at your personalised frame before you finish.</p>
+            </div>
+            <div className="space-y-5 px-6 py-7 sm:px-10 sm:py-9">
+              <button
+                type="button"
+                onClick={() => setShowSummary(value => !value)}
+                className="flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 text-left transition hover:border-gray-400 hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                aria-expanded={showSummary}
+              >
+                <span className="font-medium">{showSummary ? "Hide your customisation" : "View your customisation"}</span>
+                <span className="text-xl text-gray-400" aria-hidden="true">{showSummary ? "−" : "+"}</span>
+              </button>
+              {showSummary && (
+                <div className="grid grid-cols-2 gap-3 rounded-2xl bg-blue-50 p-4 text-sm text-gray-700 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div><span className="block text-xs uppercase tracking-wider text-gray-500">Frame</span><strong>{FRAME_SHAPES.find(s => s.id === cfg.shape)?.label}</strong></div>
+                  <div><span className="block text-xs uppercase tracking-wider text-gray-500">Lens</span><strong>{LENS_COLORS.find(l => l.id === cfg.lensColor)?.label}</strong></div>
+                  <div><span className="block text-xs uppercase tracking-wider text-gray-500">Size</span><strong>{cfg.size}</strong></div>
+                  <div><span className="block text-xs uppercase tracking-wider text-gray-500">Extras</span><strong>{cfg.clipOn ? "Clip-on lenses" : "Standard"}</strong></div>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => { setIsComplete(false); setActiveTab("Extras"); }}
+                className="w-full rounded-2xl bg-gray-950 px-5 py-4 text-sm font-semibold text-white transition hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Edit my customisation
+              </button>
+            </div>
+          </section>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <div className="md:h-screen w-full bg-white text-gray-900 font-sans flex flex-col md:flex-row md:overflow-hidden">
@@ -1084,6 +1131,17 @@ export default function App() {
                     selected={cfg.clipOn} 
                     onClick={() => updateCfg("clipOn")(!cfg.clipOn)} 
                   />
+                </div>
+
+                <div className="border-t border-gray-200 pt-6">
+                  <button
+                    type="button"
+                    onClick={() => setIsComplete(true)}
+                    className="w-full rounded-2xl bg-blue-600 px-5 py-4 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  >
+                    Click here to proceed
+                  </button>
+                  <p className="mt-2 text-center text-xs text-gray-500">Review your choices and continue to your confirmation page.</p>
                 </div>
               </div>
             )}
