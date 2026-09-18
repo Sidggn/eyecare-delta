@@ -465,13 +465,28 @@ function ThreeDGlasses({ cfg, rotation }: { cfg: any, rotation: number }) {
   const shadowX = Math.sin(rotation * Math.PI / 180) * 100;
   const shadowScale = Math.max(0.3, 1 - Math.abs(Math.sin(rotation * Math.PI / 180)) * 0.5);
 
+  const isCatEye = cfg.shape === "catEye";
+
   return (
     <div className="w-full flex-1 relative z-10 flex items-center justify-center overflow-visible pointer-events-none" style={{ perspective: '1200px' }}>
       
       {/* Responsive Scale Wrapper using absolute positioning to avoid pushing controls */}
       <div className="absolute flex items-center justify-center pointer-events-auto" style={{ transform: 'scale(var(--scale))' }}>
-        <div className="relative w-[600px] h-[300px]">
-          
+        <div className={`relative w-[600px] ${isCatEye ? "h-[300px]" : "h-[300px]"}`}>
+          {isCatEye ? (
+            <div
+              className="absolute inset-0 flex items-center justify-center transition-transform duration-500 ease-out"
+              style={{ transform: `rotateY(${rotation}deg) rotateX(${rX}deg)`, transformStyle: "preserve-3d" }}
+            >
+              <img
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-DhDaMp6lHG7kVsIrL8o4LimTm5OIN2.png"
+                alt="Black cat-eye glasses"
+                className="w-full max-w-[600px] object-contain"
+              />
+            </div>
+          ) : null}
+          {!isCatEye && (
+            <>
           {/* Floor Drop Shadow */}
           <div 
             className="absolute w-[450px] h-[80px] bg-black/20 blur-2xl rounded-full transition-transform duration-500 ease-out" 
@@ -619,6 +634,8 @@ function ThreeDGlasses({ cfg, rotation }: { cfg: any, rotation: number }) {
             );
         })}
           </div>
+            </>
+          )}
         </div>
       </div>
     </div>
