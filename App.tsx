@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Eye, Move3d } from "lucide-react";
+import { Check, Eye } from "lucide-react";
 
 /* ---------------------------------------------------------
    DATA
@@ -43,11 +43,8 @@ const FRAME_WIDTHS = [
 ];
 
 const LENS_COLORS = [
-  { id: "grey", label: "Classic Grey", hex: "#4a4a4a" },
-  { id: "amber", label: "Brown/Amber", hex: "#8b5a2b" },
   { id: "green", label: "Green", hex: "#35513e" },
-  { id: "blue", label: "Blue Mirror", hex: "#5c7a8a" },
-  { id: "rose", label: "Rose", hex: "#a3697a" },
+  { id: "black", label: "Black", hex: "#20211f" },
   { id: "yellow", label: "Yellow", hex: "#c99a2e" },
 ];
 
@@ -447,7 +444,7 @@ function ThreeDGlasses({ cfg, rotation }: { cfg: any, rotation: number }) {
   const sizeScale = cfg.size === "S" ? 0.9 : cfg.size === "L" ? 1.1 : 1.0;
   
   // Clean continuous 3D rotation without clipping
-  const rX = -8; 
+  const rX = 0; 
 
   const hingeBaseY = 140 + (anchor.y - 140) * sizeScale;
   const leftHingeX = 300 + (anchor.x - 300) * sizeScale;
@@ -627,7 +624,6 @@ function ThreeDGlasses({ cfg, rotation }: { cfg: any, rotation: number }) {
 export default function App() {
   const [activeTab, setActiveTab] = useState(TABS[0]);
   const [showThankYou, setShowThankYou] = useState(false);
-  const [rotation, setRotation] = useState(0); // 3D View Angle
   
   // Configuration State
   const [cfg, setCfg] = useState({
@@ -637,7 +633,7 @@ export default function App() {
     finish: "matte",
     frameWidth: "standard",
     
-    lensColor: "grey",
+    lensColor: "green",
     lensType: "polarized",
     lensShape: "match",
     uvProtection: "uv400",
@@ -682,7 +678,7 @@ export default function App() {
             eyecare<span className="text-blue-600">.</span>
           </div>
           <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs font-medium tracking-widest text-gray-500 uppercase bg-white/80 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full backdrop-blur-md shadow-sm border border-gray-200">
-            <Move3d size={14} className="w-3 h-3 md:w-4 md:h-4" /> Interactive 3D
+            Front-facing preview
           </div>
         </div>
         
@@ -690,45 +686,7 @@ export default function App() {
         <div className="flex-1 flex flex-col items-center justify-center p-2 pt-12 md:p-8 relative">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-gray-50 to-gray-100"></div>
           
-          <ThreeDGlasses cfg={cfg} rotation={rotation} />
-          
-          {/* Rotation Controls */}
-          <div className="relative z-20 mt-2 md:mt-8 flex flex-col items-center bg-white/60 backdrop-blur-md px-4 py-3 md:px-6 md:py-4 rounded-2xl md:rounded-3xl border border-gray-200 shadow-sm pointer-events-auto max-w-[95vw]">
-            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 md:mb-3">Rotate View Angle</span>
-            
-            <div className="flex items-center gap-2 md:gap-4">
-              <button 
-                onClick={() => setRotation(45)}
-                className={`text-[10px] md:text-xs font-medium px-2 py-1 md:px-3 md:py-1.5 rounded-full transition-colors ${rotation > 20 && rotation < 80 ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-              >
-                Left
-              </button>
-              
-              <div className="relative flex items-center">
-                <input 
-                  type="range" 
-                  min="-180" max="180" 
-                  value={rotation} 
-                  onChange={(e) => setRotation(Number(e.target.value))}
-                  className="w-24 sm:w-32 md:w-40 h-1 bg-gray-300 rounded-lg appearance-none cursor-ew-resize accent-gray-900"
-                />
-              </div>
-
-              <button 
-                onClick={() => setRotation(-45)}
-                className={`text-[10px] md:text-xs font-medium px-2 py-1 md:px-3 md:py-1.5 rounded-full transition-colors ${rotation < -20 && rotation > -80 ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-              >
-                Right
-              </button>
-            </div>
-            
-            <div className="mt-3 md:mt-4 flex gap-1.5 md:gap-2 flex-wrap justify-center">
-               <button onClick={() => setRotation(180)} className={`text-[9px] md:text-[10px] uppercase tracking-wider px-2 py-1 md:px-3 md:py-1 rounded-full ${Math.abs(rotation) === 180 ? 'bg-gray-200 text-gray-900 font-bold' : 'text-gray-400 hover:bg-gray-100'}`}>Back</button>
-               <button onClick={() => setRotation(90)} className={`text-[9px] md:text-[10px] uppercase tracking-wider px-2 py-1 md:px-3 md:py-1 rounded-full ${rotation === 90 ? 'bg-gray-200 text-gray-900 font-bold' : 'text-gray-400 hover:bg-gray-100'}`}>Profile L</button>
-               <button onClick={() => setRotation(0)} className={`text-[9px] md:text-[10px] uppercase tracking-wider px-2 py-1 md:px-3 md:py-1 rounded-full ${rotation === 0 ? 'bg-gray-200 text-gray-900 font-bold' : 'text-gray-400 hover:bg-gray-100'}`}>Front</button>
-               <button onClick={() => setRotation(-90)} className={`text-[9px] md:text-[10px] uppercase tracking-wider px-2 py-1 md:px-3 md:py-1 rounded-full ${rotation === -90 ? 'bg-gray-200 text-gray-900 font-bold' : 'text-gray-400 hover:bg-gray-100'}`}>Profile R</button>
-            </div>
-          </div>
+          <ThreeDGlasses cfg={cfg} rotation={0} />
         </div>
 
         {/* Selected Summary overlay */}
@@ -752,31 +710,12 @@ export default function App() {
         {/* Mobile Drag Handle */}
         <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mt-3 mb-1 md:hidden shrink-0"></div>
 
-        {/* Tabs Navigation */}
-        <div className="flex overflow-x-auto hide-scrollbar border-b border-gray-200 px-4 md:px-6 pt-2 md:pt-6 shrink-0 relative bg-white md:sticky md:top-0 z-10 shadow-[0_10px_10px_-10px_rgba(0,0,0,0.05)]">
-          <div className="flex gap-4 md:gap-6">
-            {TABS.map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`pb-3 md:pb-4 text-xs md:text-sm font-medium whitespace-nowrap transition-colors relative
-                  ${activeTab === tab ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
-              >
-                {tab}
-                {activeTab === tab && (
-                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gray-900 rounded-t-full"></div>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Tab Content Area */}
+        {/* All four customization options are visible on one page */}
         <div className="flex-1 md:overflow-y-auto p-4 md:p-10 pb-20 md:pb-24 bg-white custom-scrollbar">
           <div className="max-w-xl mx-auto space-y-10">
             
             {/* --- LOW CUSTOMISATION --- */}
-            {activeTab === "Frame Shape" && (
+            {(
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div>
                   <SectionTitle>Frame Shape</SectionTitle>
@@ -790,12 +729,12 @@ export default function App() {
                       />
                     ))}
                   </div>
-                  <p className="text-xs text-gray-500 mt-3">Choose a shape to update the interactive frame preview.</p>
+                  <p className="text-xs text-gray-500 mt-3">Choose a shape to update the front-facing frame preview.</p>
                 </div>
               </div>
             )}
 
-            {activeTab === "Fitting" && (
+            {(
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div>
                   <SectionTitle>Fitting</SectionTitle>
@@ -808,7 +747,7 @@ export default function App() {
               </div>
             )}
 
-            {activeTab === "Shade Color" && (
+            {(
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div>
                   <SectionTitle>Shade Color</SectionTitle>
@@ -821,7 +760,7 @@ export default function App() {
               </div>
             )}
 
-            {activeTab === "Customised Name" && (
+            {(
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div>
                   <SectionTitle>Customised Name</SectionTitle>
