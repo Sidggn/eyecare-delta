@@ -5,14 +5,10 @@ import { Check, Eye, Move3d } from "lucide-react";
    DATA
 --------------------------------------------------------- */
 const FRAME_SHAPES = [
-  { id: "wayfarer", label: "Wayfarer" },
   { id: "aviator", label: "Aviator" },
-  { id: "round", label: "Round" },
   { id: "catEye", label: "Cat-eye" },
-  { id: "rectangular", label: "Rectangular" },
-  { id: "hexagonal", label: "Hexagonal" },
-  { id: "oversized", label: "Oversized" },
-  { id: "shield", label: "Shield" },
+  { id: "round", label: "Round" },
+  { id: "rectangular", label: "Rectangle" },
 ];
 
 const FRAME_COLORS = [
@@ -165,7 +161,7 @@ const CLOTH_COLORS = [
   { id: "brand", label: "eyecare Blue" },
 ];
 
-const TABS = ["Frame", "Lenses", "Temples", "Hardware", "Fit & Sizing", "Personalize", "Extras"];
+const TABS = ["Frame Shape", "Fitting", "Shade Color", "Customised Name"];
 
 /* ---------------------------------------------------------
    SVG PATHS & UTILS
@@ -630,11 +626,12 @@ function ThreeDGlasses({ cfg, rotation }: { cfg: any, rotation: number }) {
 --------------------------------------------------------- */
 export default function App() {
   const [activeTab, setActiveTab] = useState(TABS[0]);
+  const [showThankYou, setShowThankYou] = useState(false);
   const [rotation, setRotation] = useState(0); // 3D View Angle
   
   // Configuration State
   const [cfg, setCfg] = useState({
-    shape: "wayfarer",
+    shape: "aviator",
     frameColor: "matte-black",
     material: "acetate",
     finish: "matte",
@@ -659,6 +656,7 @@ export default function App() {
     size: "M",
     faceShape: "any",
     
+    frameName: "",
     engraveName: "",
     engraveFont: "minimal",
     engraveColor: "natural",
@@ -777,7 +775,77 @@ export default function App() {
         <div className="flex-1 md:overflow-y-auto p-4 md:p-10 pb-20 md:pb-24 bg-white custom-scrollbar">
           <div className="max-w-xl mx-auto space-y-10">
             
-            {/* --- TAB: FRAME --- */}
+            {/* --- LOW CUSTOMISATION --- */}
+            {activeTab === "Frame Shape" && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div>
+                  <SectionTitle>Frame Shape</SectionTitle>
+                  <div className="grid grid-cols-2 gap-3">
+                    {FRAME_SHAPES.map((shape) => (
+                      <OptionCard
+                        key={shape.id}
+                        label={shape.label}
+                        selected={cfg.shape === shape.id}
+                        onClick={() => updateCfg("shape")(shape.id)}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-3">Choose a shape to update the interactive frame preview.</p>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "Fitting" && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div>
+                  <SectionTitle>Fitting</SectionTitle>
+                  <div className="space-y-3">
+                    {SIZES.map((size) => (
+                      <OptionCard key={size.id} label={size.label} sub={size.sub} selected={cfg.size === size.id} onClick={() => updateCfg("size")(size.id)} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "Shade Color" && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div>
+                  <SectionTitle>Shade Color</SectionTitle>
+                  <div className="flex flex-wrap gap-4">
+                    {LENS_COLORS.map((color) => (
+                      <Swatch key={color.id} hex={color.hex} label={color.label} selected={cfg.lensColor === color.id} onClick={() => updateCfg("lensColor")(color.id)} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "Customised Name" && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div>
+                  <SectionTitle>Customised Name</SectionTitle>
+                  <input
+                    type="text"
+                    maxLength={20}
+                    placeholder="e.g. ALEX M."
+                    value={cfg.engraveName}
+                    onChange={(e) => updateCfg("engraveName")(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-shadow"
+                  />
+                  <p className="text-xs text-gray-500 mt-2">Add a name to customise your frame.</p>
+                  <button
+                    type="button"
+                    onClick={() => setShowThankYou(true)}
+                    className="mt-5 w-full rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+                  >
+                    Click here to proceed
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* --- LEGACY DETAIL TABS (kept for existing preview configuration) --- */}
             {activeTab === "Frame" && (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div>
@@ -1090,6 +1158,33 @@ export default function App() {
           </div>
         </div>
       </div>
+
+      {showThankYou && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 p-4"
+          role="presentation"
+          onClick={() => setShowThankYou(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="thank-you-title"
+            className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 id="thank-you-title" className="text-lg font-semibold text-gray-900">
+              Thank you for customising your sunglass
+            </h2>
+            <button
+              type="button"
+              onClick={() => setShowThankYou(false)}
+              className="mt-5 rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
       <style>{`
         :root { --scale: 0.5; }
         @media (min-width: 360px) { :root { --scale: 0.55; } }
