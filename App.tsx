@@ -1,14 +1,18 @@
 import { useState } from "react";
-import { Check, Eye } from "lucide-react";
+import { Check, Eye, Move3d } from "lucide-react";
 
 /* ---------------------------------------------------------
    DATA
 --------------------------------------------------------- */
 const FRAME_SHAPES = [
+  { id: "wayfarer", label: "Wayfarer" },
   { id: "aviator", label: "Aviator" },
-  { id: "catEye", label: "Cat-eye" },
   { id: "round", label: "Round" },
-  { id: "rectangular", label: "Rectangle" },
+  { id: "catEye", label: "Cat-eye" },
+  { id: "rectangular", label: "Rectangular" },
+  { id: "hexagonal", label: "Hexagonal" },
+  { id: "oversized", label: "Oversized" },
+  { id: "shield", label: "Shield" },
 ];
 
 const FRAME_COLORS = [
@@ -43,8 +47,11 @@ const FRAME_WIDTHS = [
 ];
 
 const LENS_COLORS = [
+  { id: "grey", label: "Classic Grey", hex: "#4a4a4a" },
+  { id: "amber", label: "Brown/Amber", hex: "#8b5a2b" },
   { id: "green", label: "Green", hex: "#35513e" },
-  { id: "black", label: "Black", hex: "#20211f" },
+  { id: "blue", label: "Blue Mirror", hex: "#5c7a8a" },
+  { id: "rose", label: "Rose", hex: "#a3697a" },
   { id: "yellow", label: "Yellow", hex: "#c99a2e" },
 ];
 
@@ -158,7 +165,7 @@ const CLOTH_COLORS = [
   { id: "brand", label: "eyecare Blue" },
 ];
 
-const TABS = ["Frame Shape", "Fitting", "Shade Color", "Customised Name"];
+const TABS = ["Frame", "Lenses", "Temples", "Hardware", "Fit & Sizing", "Personalize", "Extras"];
 
 /* ---------------------------------------------------------
    SVG PATHS & UTILS
@@ -167,7 +174,7 @@ const LENS_PATHS: Record<string, string> = {
   wayfarer: "M70,68 L246,53 Q270,53 271,80 L262,172 Q259,193 233,197 L92,206 Q66,204 63,180 L64,93 Q65,73 70,68 Z",
   aviator: "M65,77 Q66,44 102,40 L233,46 Q267,52 270,92 Q276,150 236,190 Q196,214 150,206 Q92,196 71,151 Q59,111 65,77 Z",
   round: "M160,130 m-96,0 a96,96 0 1,0 192,0 a96,96 0 1,0 -192,0",
-  catEye: "M42,92 Q48,48 94,42 Q145,40 198,58 Q238,70 258,104 Q260,151 228,187 Q194,214 143,207 Q88,199 59,166 Q38,137 42,92 Z",
+  catEye: "M45,102 L92,54 Q132,34 191,44 Q251,55 256,111 Q259,161 220,191 Q180,211 119,206 Q69,201 54,161 Q39,130 45,102 Z",
   rectangular: "M70,80 L250,80 Q265,80 265,95 L260,170 Q255,185 240,185 L80,185 Q65,185 65,170 L70,95 Q70,80 85,80 Z",
   hexagonal: "M110,60 L210,60 L260,120 L210,190 L110,190 L60,120 Z",
   oversized: "M60,50 L260,50 Q280,50 280,80 L270,190 Q265,220 230,220 L90,220 Q55,220 50,190 L50,80 Q50,50 60,50 Z",
@@ -444,7 +451,7 @@ function ThreeDGlasses({ cfg, rotation }: { cfg: any, rotation: number }) {
   const sizeScale = cfg.size === "S" ? 0.9 : cfg.size === "L" ? 1.1 : 1.0;
   
   // Clean continuous 3D rotation without clipping
-  const rX = 0; 
+  const rX = -8; 
 
   const hingeBaseY = 140 + (anchor.y - 140) * sizeScale;
   const leftHingeX = 300 + (anchor.x - 300) * sizeScale;
@@ -623,17 +630,17 @@ function ThreeDGlasses({ cfg, rotation }: { cfg: any, rotation: number }) {
 --------------------------------------------------------- */
 export default function App() {
   const [activeTab, setActiveTab] = useState(TABS[0]);
-  const [showThankYou, setShowThankYou] = useState(false);
+  const [rotation, setRotation] = useState(0); // 3D View Angle
   
   // Configuration State
   const [cfg, setCfg] = useState({
-    shape: "catEye",
+    shape: "wayfarer",
     frameColor: "matte-black",
     material: "acetate",
     finish: "matte",
     frameWidth: "standard",
     
-    lensColor: "green",
+    lensColor: "grey",
     lensType: "polarized",
     lensShape: "match",
     uvProtection: "uv400",
@@ -652,7 +659,6 @@ export default function App() {
     size: "M",
     faceShape: "any",
     
-    frameName: "",
     engraveName: "",
     engraveFont: "minimal",
     engraveColor: "natural",
@@ -678,7 +684,7 @@ export default function App() {
             eyecare<span className="text-blue-600">.</span>
           </div>
           <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs font-medium tracking-widest text-gray-500 uppercase bg-white/80 px-2.5 py-1 md:px-3 md:py-1.5 rounded-full backdrop-blur-md shadow-sm border border-gray-200">
-            Front-facing preview
+            <Move3d size={14} className="w-3 h-3 md:w-4 md:h-4" /> Interactive 3D
           </div>
         </div>
         
@@ -686,7 +692,45 @@ export default function App() {
         <div className="flex-1 flex flex-col items-center justify-center p-2 pt-12 md:p-8 relative">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-gray-50 to-gray-100"></div>
           
-          <ThreeDGlasses cfg={cfg} rotation={0} />
+          <ThreeDGlasses cfg={cfg} rotation={rotation} />
+          
+          {/* Rotation Controls */}
+          <div className="relative z-20 mt-2 md:mt-8 flex flex-col items-center bg-white/60 backdrop-blur-md px-4 py-3 md:px-6 md:py-4 rounded-2xl md:rounded-3xl border border-gray-200 shadow-sm pointer-events-auto max-w-[95vw]">
+            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 md:mb-3">Rotate View Angle</span>
+            
+            <div className="flex items-center gap-2 md:gap-4">
+              <button 
+                onClick={() => setRotation(45)}
+                className={`text-[10px] md:text-xs font-medium px-2 py-1 md:px-3 md:py-1.5 rounded-full transition-colors ${rotation > 20 && rotation < 80 ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              >
+                Left
+              </button>
+              
+              <div className="relative flex items-center">
+                <input 
+                  type="range" 
+                  min="-180" max="180" 
+                  value={rotation} 
+                  onChange={(e) => setRotation(Number(e.target.value))}
+                  className="w-24 sm:w-32 md:w-40 h-1 bg-gray-300 rounded-lg appearance-none cursor-ew-resize accent-gray-900"
+                />
+              </div>
+
+              <button 
+                onClick={() => setRotation(-45)}
+                className={`text-[10px] md:text-xs font-medium px-2 py-1 md:px-3 md:py-1.5 rounded-full transition-colors ${rotation < -20 && rotation > -80 ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              >
+                Right
+              </button>
+            </div>
+            
+            <div className="mt-3 md:mt-4 flex gap-1.5 md:gap-2 flex-wrap justify-center">
+               <button onClick={() => setRotation(180)} className={`text-[9px] md:text-[10px] uppercase tracking-wider px-2 py-1 md:px-3 md:py-1 rounded-full ${Math.abs(rotation) === 180 ? 'bg-gray-200 text-gray-900 font-bold' : 'text-gray-400 hover:bg-gray-100'}`}>Back</button>
+               <button onClick={() => setRotation(90)} className={`text-[9px] md:text-[10px] uppercase tracking-wider px-2 py-1 md:px-3 md:py-1 rounded-full ${rotation === 90 ? 'bg-gray-200 text-gray-900 font-bold' : 'text-gray-400 hover:bg-gray-100'}`}>Profile L</button>
+               <button onClick={() => setRotation(0)} className={`text-[9px] md:text-[10px] uppercase tracking-wider px-2 py-1 md:px-3 md:py-1 rounded-full ${rotation === 0 ? 'bg-gray-200 text-gray-900 font-bold' : 'text-gray-400 hover:bg-gray-100'}`}>Front</button>
+               <button onClick={() => setRotation(-90)} className={`text-[9px] md:text-[10px] uppercase tracking-wider px-2 py-1 md:px-3 md:py-1 rounded-full ${rotation === -90 ? 'bg-gray-200 text-gray-900 font-bold' : 'text-gray-400 hover:bg-gray-100'}`}>Profile R</button>
+            </div>
+          </div>
         </div>
 
         {/* Selected Summary overlay */}
@@ -710,81 +754,30 @@ export default function App() {
         {/* Mobile Drag Handle */}
         <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mt-3 mb-1 md:hidden shrink-0"></div>
 
-        {/* All four customization options are visible on one page */}
+        {/* Tabs Navigation */}
+        <div className="flex overflow-x-auto hide-scrollbar border-b border-gray-200 px-4 md:px-6 pt-2 md:pt-6 shrink-0 relative bg-white md:sticky md:top-0 z-10 shadow-[0_10px_10px_-10px_rgba(0,0,0,0.05)]">
+          <div className="flex gap-4 md:gap-6">
+            {TABS.map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`pb-3 md:pb-4 text-xs md:text-sm font-medium whitespace-nowrap transition-colors relative
+                  ${activeTab === tab ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                {tab}
+                {activeTab === tab && (
+                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gray-900 rounded-t-full"></div>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tab Content Area */}
         <div className="flex-1 md:overflow-y-auto p-4 md:p-10 pb-20 md:pb-24 bg-white custom-scrollbar">
           <div className="max-w-xl mx-auto space-y-10">
             
-            {/* --- LOW CUSTOMISATION --- */}
-            {(
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div>
-                  <SectionTitle>Frame Shape</SectionTitle>
-                  <div className="grid grid-cols-2 gap-3">
-                    {FRAME_SHAPES.map((shape) => (
-                      <OptionCard
-                        key={shape.id}
-                        label={shape.label}
-                        selected={cfg.shape === shape.id}
-                        onClick={() => updateCfg("shape")(shape.id)}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-3">Choose a shape to update the front-facing frame preview.</p>
-                </div>
-              </div>
-            )}
-
-            {(
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div>
-                  <SectionTitle>Fitting</SectionTitle>
-                  <div className="space-y-3">
-                    {SIZES.map((size) => (
-                      <OptionCard key={size.id} label={size.label} sub={size.sub} selected={cfg.size === size.id} onClick={() => updateCfg("size")(size.id)} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {(
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div>
-                  <SectionTitle>Shade Color</SectionTitle>
-                  <div className="flex flex-wrap gap-4">
-                    {LENS_COLORS.map((color) => (
-                      <Swatch key={color.id} hex={color.hex} label={color.label} selected={cfg.lensColor === color.id} onClick={() => updateCfg("lensColor")(color.id)} />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {(
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div>
-                  <SectionTitle>Customised Name</SectionTitle>
-                  <input
-                    type="text"
-                    maxLength={20}
-                    placeholder="e.g. ALEX M."
-                    value={cfg.engraveName}
-                    onChange={(e) => updateCfg("engraveName")(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-shadow"
-                  />
-                  <p className="text-xs text-gray-500 mt-2">Add a name to customise your frame.</p>
-                  <button
-                    type="button"
-                    onClick={() => setShowThankYou(true)}
-                    className="mt-5 w-full rounded-xl bg-gray-900 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
-                  >
-                    Click here to proceed
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* --- LEGACY DETAIL TABS (kept for existing preview configuration) --- */}
+            {/* --- TAB: FRAME --- */}
             {activeTab === "Frame" && (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div>
@@ -1097,33 +1090,6 @@ export default function App() {
           </div>
         </div>
       </div>
-
-      {showThankYou && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 p-4"
-          role="presentation"
-          onClick={() => setShowThankYou(false)}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="thank-you-title"
-            className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <h2 id="thank-you-title" className="text-lg font-semibold text-gray-900">
-              Thank you for customising your sunglass
-            </h2>
-            <button
-              type="button"
-              onClick={() => setShowThankYou(false)}
-              className="mt-5 rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
       <style>{`
         :root { --scale: 0.5; }
         @media (min-width: 360px) { :root { --scale: 0.55; } }
