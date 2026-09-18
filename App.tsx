@@ -5,14 +5,10 @@ import { Check, Eye, Move3d } from "lucide-react";
    DATA
 --------------------------------------------------------- */
 const FRAME_SHAPES = [
-  { id: "wayfarer", label: "Wayfarer" },
   { id: "aviator", label: "Aviator" },
-  { id: "round", label: "Round" },
   { id: "catEye", label: "Cat-eye" },
-  { id: "rectangular", label: "Rectangular" },
-  { id: "hexagonal", label: "Hexagonal" },
-  { id: "oversized", label: "Oversized" },
-  { id: "shield", label: "Shield" },
+  { id: "round", label: "Round" },
+  { id: "rectangular", label: "Rectangle" },
 ];
 
 const FRAME_COLORS = [
@@ -165,7 +161,7 @@ const CLOTH_COLORS = [
   { id: "brand", label: "eyecare Blue" },
 ];
 
-const TABS = ["Frame Name", "Fitting", "Shade Color", "Customised Name"];
+const TABS = ["Frame Shape", "Fitting", "Shade Color", "Customised Name"];
 
 /* ---------------------------------------------------------
    SVG PATHS & UTILS
@@ -634,7 +630,7 @@ export default function App() {
   
   // Configuration State
   const [cfg, setCfg] = useState({
-    shape: "wayfarer",
+    shape: "aviator",
     frameColor: "matte-black",
     material: "acetate",
     finish: "matte",
@@ -779,19 +775,21 @@ export default function App() {
           <div className="max-w-xl mx-auto space-y-10">
             
             {/* --- LOW CUSTOMISATION --- */}
-            {activeTab === "Frame Name" && (
+            {activeTab === "Frame Shape" && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div>
-                  <SectionTitle>Frame Name</SectionTitle>
-                  <input
-                    type="text"
-                    maxLength={40}
-                    placeholder="e.g. Everyday Classic"
-                    value={cfg.frameName}
-                    onChange={(e) => updateCfg("frameName")(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-shadow"
-                  />
-                  <p className="text-xs text-gray-500 mt-2">Give your frame a simple name.</p>
+                  <SectionTitle>Frame Shape</SectionTitle>
+                  <div className="grid grid-cols-2 gap-3">
+                    {FRAME_SHAPES.map((shape) => (
+                      <OptionCard
+                        key={shape.id}
+                        label={shape.label}
+                        selected={cfg.shape === shape.id}
+                        onClick={() => updateCfg("shape")(shape.id)}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-3">Choose a shape to update the interactive frame preview.</p>
                 </div>
               </div>
             )}
