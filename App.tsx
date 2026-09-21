@@ -24,11 +24,11 @@ const sizes: { id: Size; label: string; note: string }[] = [
 ];
 
 const shapePath: Record<Shape, string> = {
-  wayfarer: "M40 46 Q42 38 52 38 H143 Q153 38 155 46 L150 105 Q149 114 139 115 H55 Q45 114 44 105 Z",
-  aviator: "M40 45 Q40 35 52 34 H143 Q155 35 155 45 L148 98 Q143 116 99 122 Q55 116 47 98 Z",
-  rectangular: "M42 43 Q42 38 48 38 H148 Q154 38 154 43 V104 Q154 110 148 110 H48 Q42 110 42 104 Z",
-  round: "M99 32 A43 43 0 1 1 99 118 A43 43 0 1 1 99 32",
-  "cat-eye": "M35 48 L52 35 Q77 28 99 38 Q122 28 147 35 L164 48 L155 101 Q152 113 139 116 H59 Q46 113 43 101 Z",
+  wayfarer: "M18 46 Q20 38 30 38 H83 Q92 38 94 46 L90 105 Q89 114 80 115 H32 Q22 114 21 105 Z",
+  aviator: "M18 45 Q18 35 30 34 H83 Q94 35 94 45 L88 98 Q83 116 56 122 Q29 116 24 98 Z",
+  rectangular: "M20 43 Q20 38 26 38 H88 Q94 38 94 43 V104 Q94 110 88 110 H26 Q20 110 20 104 Z",
+  round: "M56 32 A43 43 0 1 1 56 118 A43 43 0 1 1 56 32",
+  "cat-eye": "M13 48 L30 35 Q54 28 78 38 Q87 35 94 40 L94 101 Q91 113 80 116 H32 Q21 113 20 101 Z",
 };
 
 function ChoiceButton({ selected, label, onClick, children }: { selected: boolean; label: string; onClick: () => void; children: React.ReactNode }) {
