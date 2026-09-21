@@ -42,9 +42,21 @@ function FramePreview({ shape, frameColor, lensColor, size, engraving, rotation 
   const scale = size === "S" ? 0.82 : size === "L" ? 1.1 : 0.96
   return <div className="preview-wrap" onPointerMove={event => { const rect = event.currentTarget.getBoundingClientRect(); const y = ((event.clientX - rect.left) / rect.width - .5) * 18; const x = ((event.clientY - rect.top) / rect.height - .5) * -10; event.currentTarget.style.setProperty("--rx", `${x}deg`); event.currentTarget.style.setProperty("--ry", `${y}deg`) }} onPointerLeave={event => { event.currentTarget.style.setProperty("--rx", "0deg"); event.currentTarget.style.setProperty("--ry", "0deg") }}>
     <div className="frame-3d" style={{ transform: `scale(${scale}) rotateX(var(--rx, 0deg)) rotateY(calc(${rotation}deg + var(--ry, 0deg)))` }}>
-      <svg viewBox="0 0 112 145" role="img" aria-label={`${selectedShape.label} frame preview`}>
-        <defs><linearGradient id="lens-shine" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#fff" stopOpacity=".45" /><stop offset=".48" stopColor="#fff" stopOpacity="0" /><stop offset="1" stopColor="#000" stopOpacity=".18" /></linearGradient></defs>
-        <g transform="translate(4 12)"><path d={selectedShape.path} fill={lens} opacity=".72" /><path d={selectedShape.path} fill="url(#lens-shine)" /><path d={selectedShape.path} fill="none" stroke={frame} strokeWidth="7" strokeLinejoin="round" /><g transform="translate(104 0) scale(-1 1)"><path d={selectedShape.path} fill={lens} opacity=".72" /><path d={selectedShape.path} fill="url(#lens-shine)" /><path d={selectedShape.path} fill="none" stroke={frame} strokeWidth="7" strokeLinejoin="round" /></g><path d="M49 58 Q56 51 63 58 L63 66 Q56 61 49 66Z" fill={frame} /><path d="M14 52 L2 48 M98 52 L110 48" stroke={frame} strokeWidth="5" strokeLinecap="round" />{engraving && <text x="56" y="139" textAnchor="middle" fill={frame} fontSize="5" letterSpacing="2">{engraving.toUpperCase()}</text>}</g>
+      <svg viewBox="0 0 240 180" role="img" aria-label={`${selectedShape.label} frame preview`}>
+        <defs>
+          <linearGradient id="lens-fill" x1="0" y1="0" x2="1" y2="1"><stop stopColor={lens} stopOpacity=".98" /><stop offset=".55" stopColor={lens} stopOpacity=".78" /><stop offset="1" stopColor="#101010" stopOpacity=".55" /></linearGradient>
+          <linearGradient id="lens-glare" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#fff" stopOpacity=".62" /><stop offset=".28" stopColor="#fff" stopOpacity=".1" /><stop offset="1" stopColor="#fff" stopOpacity="0" /></linearGradient>
+          <linearGradient id="frame-finish" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#fff" stopOpacity=".2" /><stop offset=".18" stopColor={frame} /><stop offset="1" stopColor="#080808" stopOpacity=".65" /></linearGradient>
+          <filter id="frame-shadow" x="-30%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="12" stdDeviation="7" floodColor="#17120e" floodOpacity=".28" /></filter>
+        </defs>
+        <g filter="url(#frame-shadow)" transform="translate(8 16)">
+          <path d="M18 58 L2 51" stroke={frame} strokeWidth="7" strokeLinecap="round" /><path d="M222 58 L238 51" stroke={frame} strokeWidth="7" strokeLinecap="round" />
+          <g transform="translate(4 0)"><path d={selectedShape.path} fill="url(#lens-fill)" /><path d={selectedShape.path} fill="url(#lens-glare)" /><path d={selectedShape.path} fill="none" stroke="url(#frame-finish)" strokeWidth="9" strokeLinejoin="round" /></g>
+          <g transform="translate(236 0) scale(-1 1)"><path d={selectedShape.path} fill="url(#lens-fill)" /><path d={selectedShape.path} fill="url(#lens-glare)" /><path d={selectedShape.path} fill="none" stroke="url(#frame-finish)" strokeWidth="9" strokeLinejoin="round" /></g>
+          <path d="M108 52 Q120 42 132 52 L130 62 Q120 56 110 62Z" fill={frame} /><path d="M109 54 Q120 48 131 54" fill="none" stroke="#fff" strokeOpacity=".22" strokeWidth="2" />
+          <circle cx="21" cy="58" r="4" fill="#fff" fillOpacity=".32" /><circle cx="219" cy="58" r="4" fill="#fff" fillOpacity=".32" />
+          {engraving && <text x="120" y="151" textAnchor="middle" fill="#fff" fillOpacity=".78" fontSize="7" fontWeight="600" letterSpacing="3">{engraving.toUpperCase()}</text>}
+        </g>
       </svg>
     </div>
   </div>
