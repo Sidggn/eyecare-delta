@@ -1031,8 +1031,8 @@ export default function App() {
               </div>
             )}
 
-            {/* --- TAB: PERSONALIZE --- */}
-            {activeTab === "Personalize" && (
+            {/* --- TAB: CUSTOMISE --- */}
+            {activeTab === "Customise" && (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div>
                   <SectionTitle>Engraved Name or Initials</SectionTitle>
