@@ -165,7 +165,7 @@ const CLOTH_COLORS = [
   { id: "brand", label: "eyecare Blue" },
 ];
 
-const TABS = ["Frame", "Lenses", "Temples", "Hardware", "Fit & Sizing", "Personalize", "Extras"];
+const TABS = ["Frame", "Lenses", "Temples", "Hardware", "Fit & Sizing", "Add-ons", "Extras"];
 
 /* ---------------------------------------------------------
    SVG PATHS & UTILS
@@ -1032,7 +1032,7 @@ export default function App() {
             )}
 
             {/* --- TAB: PERSONALIZE --- */}
-            {activeTab === "Personalize" && (
+            {activeTab === "Add-ons" && (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div>
                   <SectionTitle>Engraved Name or Initials</SectionTitle>
