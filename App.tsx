@@ -41,13 +41,15 @@ function ChoiceButton({ selected, label, onClick, children }: { selected: boolea
 }
 
 function FramePreview({ shape, frameColor, lensColor, engraving, size }: { shape: Shape; frameColor: Color; lensColor: Color; engraving: string; size: Size }) {
+  const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const frame = colors.find((item) => item.id === frameColor)?.value ?? colors[0].value;
   const lens = colors.find((item) => item.id === lensColor)?.value ?? colors[2].value;
   const scale = size === "small" ? 0.86 : size === "large" ? 1.08 : 1;
   return (
     <div className="preview-stage">
       <div className="preview-copy"><span>YOUR FRAME</span><strong>Made to be yours.</strong></div>
-      <svg className="frame-svg" viewBox="0 0 200 150" role="img" aria-label={`${shape} frame preview`} style={{ transform: `scale(${scale})` }}>
+      <div className="frame-3d-wrap" onPointerMove={(event) => { const rect = event.currentTarget.getBoundingClientRect(); setRotation({ x: ((event.clientY - rect.top) / rect.height - 0.5) * -12, y: ((event.clientX - rect.left) / rect.width - 0.5) * 18 }); }} onPointerLeave={() => setRotation({ x: 0, y: 0 })}>
+        <svg className="frame-svg" viewBox="0 0 200 150" role="img" aria-label={`${shape} frame preview`} style={{ transform: `scale(${scale}) rotateX(${rotation.x}deg) rotateY(${rotation.y}deg)` }}>
         <defs><linearGradient id="lens-glow" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor={lens} stopOpacity=".55" /><stop offset="1" stopColor={lens} stopOpacity=".18" /></linearGradient></defs>
         <g fill="url(#lens-glow)" stroke={frame} strokeWidth="6" strokeLinejoin="round">
           <path d={shapePath[shape]} transform="translate(-1 0)" />
@@ -56,7 +58,8 @@ function FramePreview({ shape, frameColor, lensColor, engraving, size }: { shape
         <path d="M99 54 Q100 47 101 54" fill="none" stroke={frame} strokeWidth="6" strokeLinecap="round" />
         <path d="M39 51 L19 42 M159 51 L181 42" fill="none" stroke={frame} strokeWidth="6" strokeLinecap="round" />
         {engraving && <text x="100" y="140" textAnchor="middle" fill={frame} fontSize="7" letterSpacing="2">{engraving.toUpperCase()}</text>}
-      </svg>
+        </svg>
+      </div>
       <div className="preview-caption"><span>Front-facing preview</span><span>{size} fit</span></div>
     </div>
   );
