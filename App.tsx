@@ -45,7 +45,7 @@ const lensProfiles: Record<Shape, [number, number][]> = {
   catEye: [[-0.88, 0.55], [-0.45, 0.78], [0.18, 0.62], [0.78, 0.7], [0.86, 0.25], [0.68, -0.58], [-0.62, -0.58], [-0.82, 0.08]],
 }
 
-function Lens({ x, frame, lens, shape }: { x: number; frame: string; lens: string; shape: Shape }) {
+function Lens({ x, frame, lens, shape }: { x: number; frame: string; lens: string; shape: Shape }) { // ShapeGeometry keeps each selected silhouette declarative and R3F-safe.
   const profile = useMemo(() => { const outline = new THREE.Shape(); lensProfiles[shape].forEach(([px, py], index) => index === 0 ? outline.moveTo(px, py) : outline.lineTo(px, py)); outline.closePath(); return outline }, [shape])
   return <group position={[x, 0, 0]}>
     <mesh position={[0, 0, 0.02]} scale={[1.1, 1.1, 1]}><shapeGeometry args={[profile]} /><meshPhysicalMaterial color={frame} roughness={0.32} clearcoat={0.65} /></mesh>
