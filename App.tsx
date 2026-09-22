@@ -7,6 +7,14 @@ import { Check, Move3d } from "lucide-react"
 type Shape = "wayfarer" | "aviator" | "round" | "catEye"
 type Color = "black" | "grey" | "brown"
 type Size = "S" | "M" | "L"
+type View = "front" | "left" | "right" | "back"
+
+const views: { id: View; label: string; angle: number }[] = [
+  { id: "front", label: "Front facing", angle: 0 },
+  { id: "left", label: "Left side", angle: -Math.PI / 2 },
+  { id: "right", label: "Right side", angle: Math.PI / 2 },
+  { id: "back", label: "Back side", angle: Math.PI },
+]
 
 const shapes: { id: Shape; label: string; path: string }[] = [
   { id: "wayfarer", label: "Wayfarer", path: "M18 42 Q18 32 28 32 H84 Q94 32 94 42 L90 102 Q89 112 79 114 H33 Q23 112 22 102 Z" },
@@ -53,23 +61,26 @@ function Lens({ x, frame, lens, shape }: { x: number; frame: string; lens: strin
   </group>
 }
 
-function SunglassesModel({ shape, frameColor, lensColor, size, engraving, rotation }: { shape: Shape; frameColor: Color; lensColor: Color; size: Size; engraving: string; rotation: number }) {
+function SunglassesModel({ shape, frameColor, lensColor, size, engraving, viewAngle }: { shape: Shape; frameColor: Color; lensColor: Color; size: Size; engraving: string; viewAngle: number }) {
   const group = useRef<THREE.Group>(null)
   const frame = colors.find(item => item.id === frameColor)?.hex ?? colors[0].hex
   const lens = colors.find(item => item.id === lensColor)?.hex ?? colors[1].hex
   const scale = size === "S" ? 0.82 : size === "L" ? 1.1 : 0.96
-  useFrame((_, delta) => { if (group.current) group.current.rotation.y += (rotation * Math.PI / 180 - group.current.rotation.y) * Math.min(delta * 5, 1) })
+  useFrame((_, delta) => { if (group.current) { const target = viewAngle; let difference = target - group.current.rotation.y; difference = Math.atan2(Math.sin(difference), Math.cos(difference)); group.current.rotation.y += difference * Math.min(delta * 5, 1) } })
   return <group ref={group} scale={scale} rotation={[0, 0, 0]}>
     <Lens x={-1.02} frame={frame} lens={lens} shape={shape} /><Lens x={1.02} frame={frame} lens={lens} shape={shape} />
     <mesh position={[0, 0, 0]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.08, 0.08, 0.72, 24]} /><meshPhysicalMaterial color={frame} roughness={0.35} clearcoat={0.6} /></mesh>
     <mesh position={[-0.1, 0, 0]}><sphereGeometry args={[0.13, 24, 16]} /><meshPhysicalMaterial color={frame} roughness={0.3} clearcoat={0.6} /></mesh><mesh position={[0.1, 0, 0]}><sphereGeometry args={[0.13, 24, 16]} /><meshPhysicalMaterial color={frame} roughness={0.3} clearcoat={0.6} /></mesh>
-    <mesh position={[-1.95, 0, 0]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.07, 0.07, 1.2, 20]} /><meshPhysicalMaterial color={frame} roughness={0.35} clearcoat={0.6} /></mesh><mesh position={[1.95, 0, 0]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.07, 0.07, 1.2, 20]} /><meshPhysicalMaterial color={frame} roughness={0.35} clearcoat={0.6} /></mesh>
+    <mesh position={[-1.95, 0, -0.03]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.07, 0.07, 1.2, 20]} /><meshPhysicalMaterial color={frame} roughness={0.35} clearcoat={0.6} /></mesh><mesh position={[1.95, 0, -0.03]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.07, 0.07, 1.2, 20]} /><meshPhysicalMaterial color={frame} roughness={0.35} clearcoat={0.6} /></mesh>
+    <mesh position={[-2.58, 0, -0.03]} rotation={[0, 0, Math.PI / 2]}><boxGeometry args={[0.18, 0.22, 0.2]} /><meshPhysicalMaterial color={frame} roughness={0.28} clearcoat={0.7} /></mesh><mesh position={[2.58, 0, -0.03]} rotation={[0, 0, Math.PI / 2]}><boxGeometry args={[0.18, 0.22, 0.2]} /><meshPhysicalMaterial color={frame} roughness={0.28} clearcoat={0.7} /></mesh>
+    <mesh position={[-0.38, -0.27, 0.18]} scale={[0.12, 0.2, 0.08]}><sphereGeometry args={[1, 20, 12]} /><meshPhysicalMaterial color="#d9c5aa" roughness={0.55} /></mesh><mesh position={[0.38, -0.27, 0.18]} scale={[0.12, 0.2, 0.08]}><sphereGeometry args={[1, 20, 12]} /><meshPhysicalMaterial color="#d9c5aa" roughness={0.55} /></mesh>
+    <mesh position={[-0.52, 0.02, 0.08]} rotation={[0, 0, -0.18]}><cylinderGeometry args={[0.045, 0.045, 0.42, 18]} /><meshPhysicalMaterial color={frame} roughness={0.3} /></mesh><mesh position={[0.52, 0.02, 0.08]} rotation={[0, 0, 0.18]}><cylinderGeometry args={[0.045, 0.045, 0.42, 18]} /><meshPhysicalMaterial color={frame} roughness={0.3} /></mesh>
     {engraving && <mesh position={[0, -1.25, 0.08]} scale={[Math.min(0.8, engraving.length * 0.055), 0.025, 0.015]}><boxGeometry args={[1, 1, 1]} /><meshPhysicalMaterial color="#ffffff" roughness={0.35} /></mesh>}
   </group>
 }
 
-function FramePreview({ shape, frameColor, lensColor, size, engraving, rotation }: { shape: Shape; frameColor: Color; lensColor: Color; size: Size; engraving: string; rotation: number }) {
-  return <div className="preview-wrap"><Canvas fallback={<Loader />} camera={{ position: [0, 0.1, 5], fov: 36 }} dpr={[1, 2]}><ambientLight intensity={0.8} /><directionalLight position={[2, 3, 4]} intensity={1.4} /><SunglassesModel shape={shape} frameColor={frameColor} lensColor={lensColor} size={size} engraving={engraving} rotation={rotation} /><ContactShadows position={[0, -1.2, 0]} opacity={0.3} scale={5} blur={2} /><Suspense fallback={null}><Environment preset="studio" /></Suspense><OrbitControls enablePan={false} minDistance={2} maxDistance={6} autoRotate autoRotateSpeed={0.6} /></Canvas><Loader /></div>
+function FramePreview({ shape, frameColor, lensColor, size, engraving, viewAngle }: { shape: Shape; frameColor: Color; lensColor: Color; size: Size; engraving: string; viewAngle: number }) {
+  return <div className="preview-wrap"><Canvas fallback={<Loader />} camera={{ position: [0, 0.1, 5], fov: 36 }} dpr={[1, 2]}><ambientLight intensity={0.8} /><directionalLight position={[2, 3, 4]} intensity={1.4} /><SunglassesModel shape={shape} frameColor={frameColor} lensColor={lensColor} size={size} engraving={engraving} viewAngle={viewAngle} /><ContactShadows position={[0, -1.2, 0]} opacity={0.3} scale={5} blur={2} /><Suspense fallback={null}><Environment preset="studio" /></Suspense><OrbitControls enablePan={false} minDistance={2} maxDistance={6} /></Canvas><Loader /></div>
 }
 
 export default function App() {
@@ -78,13 +89,13 @@ export default function App() {
   const [lensColor, setLensColor] = useState<Color>("grey")
   const [size, setSize] = useState<Size>("M")
   const [engraving, setEngraving] = useState("")
-  const [rotation, setRotation] = useState(0)
+  const [view, setView] = useState<View>("front")
   const [submitted, setSubmitted] = useState(false)
 
   if (submitted) return <main className="complete-page"><section className="complete-card"><div className="complete-icon"><Check /></div><p>eyecare custom studio</p><h1>Your frame is ready.</h1><button type="button" onClick={() => setSubmitted(false)}>Edit selection</button></section></main>
 
   return <main className="customizer-page">
-    <section className="preview-panel"><div className="brand">eyecare<span>.</span></div><div className="mode-pill"><Move3d size={14} /> Interactive 3D</div><div className="preview-content"><p className="eyebrow">FRAME STUDIO</p><h1>Make it yours.</h1><FramePreview shape={shape} frameColor={frameColor} lensColor={lensColor} size={size} engraving={engraving} rotation={rotation} /><div className="rotation-control"><span>Rotate view</span><input aria-label="Rotate view" type="range" min="-35" max="35" value={rotation} onChange={event => setRotation(Number(event.target.value))} /><span>{rotation}°</span></div></div></section>
+    <section className="preview-panel"><div className="brand">eyecare<span>.</span></div><div className="mode-pill"><Move3d size={14} /> Interactive 3D</div><div className="preview-content"><p className="eyebrow">FRAME STUDIO</p><h1>Make it yours.</h1><FramePreview shape={shape} frameColor={frameColor} lensColor={lensColor} size={size} engraving={engraving} viewAngle={views.find(item => item.id === view)?.angle ?? 0} /><div className="view-selector" aria-label="View angle">{views.map(item => <button key={item.id} type="button" className={view === item.id ? "view-selected" : ""} onClick={() => setView(item.id)}>{item.label}</button>)}</div></div></section>
     <section className="controls-panel"><div className="controls-inner"><div className="section-kicker">01 / CUSTOMIZE</div><h2>Choose your frame</h2><div className="control-group"><h3>Frame shape</h3><div className="choice-grid">{shapes.map(item => <Choice key={item.id} label={item.label} selected={shape === item.id} onClick={() => setShape(item.id)} />)}</div></div><div className="control-group"><h3>Frame color</h3><div className="swatch-row">{colors.map(color => <Swatch key={color.id} color={color} selected={frameColor === color.id} onClick={() => setFrameColor(color.id)} />)}</div><div className="swatch-labels">{colors.map(color => <span key={color.id}>{color.label}</span>)}</div></div><div className="control-group"><h3>Lens color</h3><div className="swatch-row">{colors.map(color => <Swatch key={color.id} color={color} selected={lensColor === color.id} onClick={() => setLensColor(color.id)} />)}</div><div className="swatch-labels">{colors.map(color => <span key={color.id}>{color.label}</span>)}</div></div><div className="control-group"><h3>Fit &amp; sizing <small>Overall size</small></h3><div className="choice-grid size-grid">{sizes.map(item => <Choice key={item.id} label={item.label} detail={item.id} selected={size === item.id} onClick={() => setSize(item.id)} />)}</div></div><div className="control-group add-ons"><h3>Add-ons</h3><label htmlFor="engraving">Engraved Name or Initials <span>Optional</span></label><input id="engraving" maxLength={14} value={engraving} onChange={event => setEngraving(event.target.value)} placeholder="Enter name or initials" /></div><button type="button" className="proceed-button" onClick={() => setSubmitted(true)}>Click here to proceed <span>→</span></button></div></section>
   </main>
 }
