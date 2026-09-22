@@ -1,4 +1,7 @@
-import { useState } from "react"
+import { Suspense, useMemo, useRef, useState } from "react"
+import { Canvas, useFrame } from "@react-three/fiber"
+import { ContactShadows, Environment, Loader, OrbitControls, Text } from "@react-three/drei"
+import * as THREE from "three"
 import { Check, Move3d } from "lucide-react"
 
 type Shape = "wayfarer" | "aviator" | "round" | "catEye"
@@ -35,31 +38,31 @@ function Swatch({ color, selected, onClick }: { color: typeof colors[number]; se
   return <button type="button" aria-label={color.label} title={color.label} onClick={onClick} className={`swatch ${selected ? "swatch-selected" : ""}`} style={{ background: color.hex }}>{selected && <Check size={16} />}</button>
 }
 
-function FramePreview({ shape, frameColor, lensColor, size, engraving, rotation }: { shape: Shape; frameColor: Color; lensColor: Color; size: Size; engraving: string; rotation: number }) {
-  const selectedShape = shapes.find(item => item.id === shape) ?? shapes[0]
+function Lens({ x, frame, lens, shape }: { x: number; frame: string; lens: string; shape: Shape }) {
+  const shapeScale = shape === "round" ? [0.88, 0.88] : shape === "aviator" ? [1.08, 0.94] : shape === "catEye" ? [1.04, 0.92] : [1, 0.86]
+  return <group position={[x, 0, 0]} scale={[shapeScale[0], shapeScale[1], 1]}>
+    <mesh position={[0, 0, 0.04]}><circleGeometry args={[0.9, 64]} /><meshPhysicalMaterial color={lens} transmission={1} roughness={0.05} thickness={0.5} ior={1.5} clearcoat={1} transparent opacity={0.9} /></mesh>
+    <mesh position={[0, 0, 0.1]}><torusGeometry args={[0.9, 0.09, 16, 64]} /><meshPhysicalMaterial color={frame} metalness={0} roughness={0.35} clearcoat={0.6} /></mesh>
+  </group>
+}
+
+function SunglassesModel({ shape, frameColor, lensColor, size, engraving, rotation }: { shape: Shape; frameColor: Color; lensColor: Color; size: Size; engraving: string; rotation: number }) {
+  const group = useRef<THREE.Group>(null)
   const frame = colors.find(item => item.id === frameColor)?.hex ?? colors[0].hex
   const lens = colors.find(item => item.id === lensColor)?.hex ?? colors[1].hex
   const scale = size === "S" ? 0.82 : size === "L" ? 1.1 : 0.96
-  return <div className="preview-wrap" onPointerMove={event => { const rect = event.currentTarget.getBoundingClientRect(); const y = ((event.clientX - rect.left) / rect.width - .5) * 18; const x = ((event.clientY - rect.top) / rect.height - .5) * -10; event.currentTarget.style.setProperty("--rx", `${x}deg`); event.currentTarget.style.setProperty("--ry", `${y}deg`) }} onPointerLeave={event => { event.currentTarget.style.setProperty("--rx", "0deg"); event.currentTarget.style.setProperty("--ry", "0deg") }}>
-    <div className="frame-3d" style={{ transform: `scale(${scale}) rotateX(var(--rx, 0deg)) rotateY(calc(${rotation}deg + var(--ry, 0deg)))` }}>
-      <svg viewBox="0 0 240 180" role="img" aria-label={`${selectedShape.label} frame preview`}>
-        <defs>
-          <linearGradient id="lens-fill" x1="0" y1="0" x2="1" y2="1"><stop stopColor={lens} stopOpacity=".98" /><stop offset=".55" stopColor={lens} stopOpacity=".78" /><stop offset="1" stopColor="#101010" stopOpacity=".55" /></linearGradient>
-          <linearGradient id="lens-glare" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#fff" stopOpacity=".62" /><stop offset=".28" stopColor="#fff" stopOpacity=".1" /><stop offset="1" stopColor="#fff" stopOpacity="0" /></linearGradient>
-          <linearGradient id="frame-finish" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#fff" stopOpacity=".2" /><stop offset=".18" stopColor={frame} /><stop offset="1" stopColor="#080808" stopOpacity=".65" /></linearGradient>
-          <filter id="frame-shadow" x="-30%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="12" stdDeviation="7" floodColor="#17120e" floodOpacity=".28" /></filter>
-        </defs>
-        <g filter="url(#frame-shadow)" transform="translate(8 16)">
-          <path d="M18 58 L2 51" stroke={frame} strokeWidth="7" strokeLinecap="round" /><path d="M222 58 L238 51" stroke={frame} strokeWidth="7" strokeLinecap="round" />
-          <g transform="translate(4 0)"><path d={selectedShape.path} fill="url(#lens-fill)" /><path d={selectedShape.path} fill="url(#lens-glare)" /><path d={selectedShape.path} fill="none" stroke="url(#frame-finish)" strokeWidth="9" strokeLinejoin="round" /></g>
-          <g transform="translate(236 0) scale(-1 1)"><path d={selectedShape.path} fill="url(#lens-fill)" /><path d={selectedShape.path} fill="url(#lens-glare)" /><path d={selectedShape.path} fill="none" stroke="url(#frame-finish)" strokeWidth="9" strokeLinejoin="round" /></g>
-          <path d="M108 52 Q120 42 132 52 L130 62 Q120 56 110 62Z" fill={frame} /><path d="M109 54 Q120 48 131 54" fill="none" stroke="#fff" strokeOpacity=".22" strokeWidth="2" />
-          <circle cx="21" cy="58" r="4" fill="#fff" fillOpacity=".32" /><circle cx="219" cy="58" r="4" fill="#fff" fillOpacity=".32" />
-          {engraving && <text x="120" y="151" textAnchor="middle" fill="#fff" fillOpacity=".78" fontSize="7" fontWeight="600" letterSpacing="3">{engraving.toUpperCase()}</text>}
-        </g>
-      </svg>
-    </div>
-  </div>
+  useFrame((_, delta) => { if (group.current) group.current.rotation.y += (rotation * Math.PI / 180 - group.current.rotation.y) * Math.min(delta * 5, 1) })
+  return <group ref={group} scale={scale} rotation={[0, 0, 0]}>
+    <Lens x={-1.02} frame={frame} lens={lens} shape={shape} /><Lens x={1.02} frame={frame} lens={lens} shape={shape} />
+    <mesh position={[0, 0, 0]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.08, 0.08, 0.72, 24]} /><meshPhysicalMaterial color={frame} roughness={0.35} clearcoat={0.6} /></mesh>
+    <mesh position={[-0.1, 0, 0]}><sphereGeometry args={[0.13, 24, 16]} /><meshPhysicalMaterial color={frame} roughness={0.3} clearcoat={0.6} /></mesh><mesh position={[0.1, 0, 0]}><sphereGeometry args={[0.13, 24, 16]} /><meshPhysicalMaterial color={frame} roughness={0.3} clearcoat={0.6} /></mesh>
+    <mesh position={[-1.95, 0, 0]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.07, 0.07, 1.2, 20]} /><meshPhysicalMaterial color={frame} roughness={0.35} clearcoat={0.6} /></mesh><mesh position={[1.95, 0, 0]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.07, 0.07, 1.2, 20]} /><meshPhysicalMaterial color={frame} roughness={0.35} clearcoat={0.6} /></mesh>
+    {engraving && <mesh position={[0, -1.25, 0.08]} scale={[Math.min(0.8, engraving.length * 0.055), 0.025, 0.015]}><boxGeometry args={[1, 1, 1]} /><meshPhysicalMaterial color="#ffffff" roughness={0.35} /></mesh>}
+  </group>
+}
+
+function FramePreview({ shape, frameColor, lensColor, size, engraving, rotation }: { shape: Shape; frameColor: Color; lensColor: Color; size: Size; engraving: string; rotation: number }) {
+  return <div className="preview-wrap"><Canvas fallback={<Loader />} camera={{ position: [0, 0.1, 5], fov: 36 }} dpr={[1, 2]}><ambientLight intensity={0.8} /><directionalLight position={[2, 3, 4]} intensity={1.4} /><SunglassesModel shape={shape} frameColor={frameColor} lensColor={lensColor} size={size} engraving={engraving} rotation={rotation} /><ContactShadows position={[0, -1.2, 0]} opacity={0.3} scale={5} blur={2} /><Suspense fallback={null}><Environment preset="studio" /></Suspense><OrbitControls enablePan={false} minDistance={2} maxDistance={6} autoRotate autoRotateSpeed={0.6} /></Canvas><Loader /></div>
 }
 
 export default function App() {
