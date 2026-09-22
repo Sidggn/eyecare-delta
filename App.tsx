@@ -38,11 +38,18 @@ function Swatch({ color, selected, onClick }: { color: typeof colors[number]; se
   return <button type="button" aria-label={color.label} title={color.label} onClick={onClick} className={`swatch ${selected ? "swatch-selected" : ""}`} style={{ background: color.hex }}>{selected && <Check size={16} />}</button>
 }
 
+const lensProfiles: Record<Shape, [number, number][]> = {
+  wayfarer: [[-0.82, 0.62], [0.72, 0.62], [0.84, 0.42], [0.7, -0.62], [-0.66, -0.62], [-0.84, 0.3]],
+  aviator: [[-0.78, 0.58], [0.78, 0.58], [0.68, 0.12], [0.45, -0.56], [0, -0.78], [-0.45, -0.56], [-0.68, 0.12]],
+  round: [[0, 0.82], [0.58, 0.58], [0.82, 0], [0.58, -0.58], [0, -0.82], [-0.58, -0.58], [-0.82, 0], [-0.58, 0.58]],
+  catEye: [[-0.88, 0.55], [-0.45, 0.78], [0.18, 0.62], [0.78, 0.7], [0.86, 0.25], [0.68, -0.58], [-0.62, -0.58], [-0.82, 0.08]],
+}
+
 function Lens({ x, frame, lens, shape }: { x: number; frame: string; lens: string; shape: Shape }) {
-  const shapeScale = shape === "round" ? [0.88, 0.88] : shape === "aviator" ? [1.08, 0.94] : shape === "catEye" ? [1.04, 0.92] : [1, 0.86]
-  return <group position={[x, 0, 0]} scale={[shapeScale[0], shapeScale[1], 1]}>
-    <mesh position={[0, 0, 0.04]}><circleGeometry args={[0.9, 64]} /><meshPhysicalMaterial color={lens} transmission={1} roughness={0.05} thickness={0.5} ior={1.5} clearcoat={1} transparent opacity={0.9} /></mesh>
-    <mesh position={[0, 0, 0.1]}><torusGeometry args={[0.9, 0.09, 16, 64]} /><meshPhysicalMaterial color={frame} metalness={0} roughness={0.35} clearcoat={0.6} /></mesh>
+  const profile = useMemo(() => { const outline = new THREE.Shape(); lensProfiles[shape].forEach(([px, py], index) => index === 0 ? outline.moveTo(px, py) : outline.lineTo(px, py)); outline.closePath(); return outline }, [shape])
+  return <group position={[x, 0, 0]}>
+    <mesh position={[0, 0, 0.02]} scale={[1.1, 1.1, 1]}><shapeGeometry args={[profile]} /><meshPhysicalMaterial color={frame} roughness={0.32} clearcoat={0.65} /></mesh>
+    <mesh position={[0, 0, 0.08]}><shapeGeometry args={[profile]} /><meshPhysicalMaterial color={lens} transmission={1} roughness={0.05} thickness={0.5} ior={1.5} clearcoat={1} transparent opacity={0.9} /></mesh>
   </group>
 }
 
