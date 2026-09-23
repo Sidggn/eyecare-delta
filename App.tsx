@@ -5,24 +5,16 @@ import { Check, Eye, Move3d } from "lucide-react";
    DATA
 --------------------------------------------------------- */
 const FRAME_SHAPES = [
-  { id: "wayfarer", label: "Wayfarer" },
   { id: "aviator", label: "Aviator" },
   { id: "round", label: "Round" },
   { id: "catEye", label: "Cat-eye" },
   { id: "rectangular", label: "Rectangular" },
-  { id: "hexagonal", label: "Hexagonal" },
-  { id: "oversized", label: "Oversized" },
-  { id: "shield", label: "Shield" },
 ];
 
 const FRAME_COLORS = [
-  { id: "matte-black", label: "Matte Black", hex: "#20211f" },
-  { id: "tortoise", label: "Tortoise", hex: "#8a5a2b", pattern: true },
-  { id: "crystal", label: "Crystal Clear", hex: "#e8e4da", crystal: true },
-  { id: "gold", label: "Gold", hex: "#c9a227" },
-  { id: "rose-gold", label: "Rose Gold", hex: "#b98a96" },
-  { id: "pastel", label: "Pastel Mint", hex: "#a4cbb4" },
-  { id: "gradient", label: "Gradient/Two-Tone", hex: "linear-gradient(135deg, #20211f, #e8e4da)" },
+  { id: "black", label: "Black", hex: "#20211f" },
+  { id: "brown", label: "Brown", hex: "#70452b" },
+  { id: "grey", label: "Grey", hex: "#747474" },
 ];
 
 const FRAME_MATERIALS = [
@@ -47,12 +39,9 @@ const FRAME_WIDTHS = [
 ];
 
 const LENS_COLORS = [
-  { id: "grey", label: "Classic Grey", hex: "#4a4a4a" },
-  { id: "amber", label: "Brown/Amber", hex: "#8b5a2b" },
-  { id: "green", label: "Green", hex: "#35513e" },
-  { id: "blue", label: "Blue Mirror", hex: "#5c7a8a" },
-  { id: "rose", label: "Rose", hex: "#a3697a" },
-  { id: "yellow", label: "Yellow", hex: "#c99a2e" },
+  { id: "black", label: "Black", hex: "#171717" },
+  { id: "brown", label: "Brown", hex: "#8b5a2b" },
+  { id: "grey", label: "Grey", hex: "#4a4a4a" },
 ];
 
 const LENS_TYPES = [
@@ -165,7 +154,7 @@ const CLOTH_COLORS = [
   { id: "brand", label: "eyecare Blue" },
 ];
 
-const TABS = ["Frame", "Lenses", "Temples", "Hardware", "Fit & Sizing", "Personalize", "Extras"];
+const TABS = ["Frame"];
 
 /* ---------------------------------------------------------
    SVG PATHS & UTILS
@@ -636,13 +625,13 @@ export default function App() {
   
   // Configuration State
   const [cfg, setCfg] = useState({
-    shape: "wayfarer",
-    frameColor: "matte-black",
+    shape: "aviator",
+    frameColor: "black",
     material: "acetate",
     finish: "matte",
     frameWidth: "standard",
     
-    lensColor: "grey",
+    lensColor: "black",
     lensType: "polarized",
     lensShape: "match",
     uvProtection: "uv400",
@@ -801,78 +790,46 @@ export default function App() {
         {/* Mobile Drag Handle */}
         <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mt-3 mb-1 md:hidden shrink-0"></div>
 
-        {/* Tabs Navigation */}
-        <div className="flex overflow-x-auto hide-scrollbar border-b border-gray-200 px-4 md:px-6 pt-2 md:pt-6 shrink-0 relative bg-white md:sticky md:top-0 z-10 shadow-[0_10px_10px_-10px_rgba(0,0,0,0.05)]">
-          <div className="flex gap-4 md:gap-6">
-            {TABS.map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`pb-3 md:pb-4 text-xs md:text-sm font-medium whitespace-nowrap transition-colors relative
-                  ${activeTab === tab ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
-              >
-                {tab}
-                {activeTab === tab && (
-                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gray-900 rounded-t-full"></div>
-                )}
-              </button>
-            ))}
-          </div>
+        <div className="border-b border-gray-200 px-4 pt-5 md:px-10 md:pt-8 shrink-0 bg-white">
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-blue-600">Customize your frame</p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight text-gray-900">Make it yours.</h1>
         </div>
 
         {/* Tab Content Area */}
         <div className="flex-1 md:overflow-y-auto p-4 md:p-10 pb-20 md:pb-24 bg-white custom-scrollbar">
           <div className="max-w-xl mx-auto space-y-10">
             
-            {/* --- TAB: FRAME --- */}
-            {activeTab === "Frame" && (
-              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div>
-                  <SectionTitle>Frame Shape</SectionTitle>
-                  <div className="grid grid-cols-2 gap-3">
-                    {FRAME_SHAPES.map(s => (
-                      <OptionCard key={s.id} label={s.label} selected={cfg.shape === s.id} onClick={() => updateCfg("shape")(s.id)} />
-                    ))}
-                  </div>
-                </div>
-                
-                <div>
-                  <SectionTitle>Frame Color</SectionTitle>
-                  <div className="flex flex-wrap gap-4">
-                    {FRAME_COLORS.map(c => (
-                      <Swatch key={c.id} hex={c.hex} pattern={c.pattern} crystal={c.crystal} label={c.label} selected={cfg.frameColor === c.id} onClick={() => updateCfg("frameColor")(c.id)} />
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <SectionTitle>Material</SectionTitle>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {FRAME_MATERIALS.map(m => (
-                      <OptionCard key={m.id} label={m.label} selected={cfg.material === m.id} onClick={() => updateCfg("material")(m.id)} />
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <SectionTitle>Finish</SectionTitle>
-                  <div className="grid grid-cols-2 gap-3">
-                    {FRAME_FINISHES.map(f => (
-                      <OptionCard key={f.id} label={f.label} selected={cfg.finish === f.id} onClick={() => updateCfg("finish")(f.id)} />
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <SectionTitle>Width / Fit</SectionTitle>
-                  <div className="space-y-3">
-                    {FRAME_WIDTHS.map(w => (
-                      <OptionCard key={w.id} label={w.label} selected={cfg.frameWidth === w.id} onClick={() => updateCfg("frameWidth")(w.id)} />
-                    ))}
-                  </div>
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div>
+                <SectionTitle>Frame Shape</SectionTitle>
+                <div className="grid grid-cols-2 gap-3">
+                  {FRAME_SHAPES.map(s => <OptionCard key={s.id} label={s.label} selected={cfg.shape === s.id} onClick={() => updateCfg("shape")(s.id)} />)}
                 </div>
               </div>
-            )}
+              <div>
+                <SectionTitle>Frame Color</SectionTitle>
+                <div className="flex flex-wrap gap-4">
+                  {FRAME_COLORS.map(c => <Swatch key={c.id} hex={c.hex} label={c.label} selected={cfg.frameColor === c.id} onClick={() => updateCfg("frameColor")(c.id)} />)}
+                </div>
+              </div>
+              <div>
+                <SectionTitle>Size</SectionTitle>
+                <div className="grid grid-cols-3 gap-3">
+                  {SIZES.map(s => <OptionCard key={s.id} label={s.label.replace(/\\s\\(.+\\)/, "")} sub={s.sub} selected={cfg.size === s.id} onClick={() => updateCfg("size")(s.id)} />)}
+                </div>
+              </div>
+              <div>
+                <SectionTitle>Shades</SectionTitle>
+                <div className="flex flex-wrap gap-4">
+                  {LENS_COLORS.map(c => <Swatch key={c.id} hex={c.hex} label={c.label} selected={cfg.lensColor === c.id} onClick={() => updateCfg("lensColor")(c.id)} />)}
+                </div>
+              </div>
+              <div>
+                <SectionTitle>Engraved Name or Initials</SectionTitle>
+                <input type="text" maxLength={20} placeholder="e.g. ALEX M." value={cfg.engraveName} onChange={e => updateCfg("engraveName")(e.target.value)} className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900" />
+              </div>
+              <button type="button" onClick={() => setIsComplete(true)} className="w-full rounded-2xl bg-blue-600 px-5 py-4 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Click here to proceed</button>
+            </div>
 
             {/* --- TAB: LENSES --- */}
             {activeTab === "Lenses" && (
