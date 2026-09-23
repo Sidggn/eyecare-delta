@@ -653,14 +653,7 @@ export default function App() {
     engraveName: "",
     engraveFont: "minimal",
     engraveColor: "natural",
-    customCaseColor: "",
     giftMessage: "",
-    
-    caseStyle: "hard",
-    clothColor: "black",
-    prescription: false,
-    rxDetails: "",
-    clipOn: false,
   });
 
   const updateCfg = (key: string) => (val: any) => setCfg(prev => ({ ...prev, [key]: val }));
@@ -693,12 +686,11 @@ export default function App() {
                   <div><span className="block text-xs uppercase tracking-wider text-gray-500">Frame</span><strong>{FRAME_SHAPES.find(s => s.id === cfg.shape)?.label}</strong></div>
                   <div><span className="block text-xs uppercase tracking-wider text-gray-500">Lens</span><strong>{LENS_COLORS.find(l => l.id === cfg.lensColor)?.label}</strong></div>
                   <div><span className="block text-xs uppercase tracking-wider text-gray-500">Size</span><strong>{cfg.size}</strong></div>
-                  <div><span className="block text-xs uppercase tracking-wider text-gray-500">Extras</span><strong>{cfg.clipOn ? "Clip-on lenses" : "Standard"}</strong></div>
                 </div>
               )}
               <button
                 type="button"
-                onClick={() => { setIsComplete(false); setActiveTab("Extras"); }}
+                onClick={() => setIsComplete(false)}
                 className="w-full rounded-2xl bg-gray-950 px-5 py-4 text-sm font-semibold text-white transition hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 Edit my customisation
