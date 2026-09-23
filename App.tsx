@@ -1,101 +1,88 @@
-import { Suspense, useMemo, useRef, useState } from "react"
-import { Canvas, useFrame } from "@react-three/fiber"
-import { ContactShadows, Environment, Loader, OrbitControls, Text } from "@react-three/drei"
-import * as THREE from "three"
-import { Check, Move3d } from "lucide-react"
+import { useState } from "react";
+import { ArrowRight, Check } from "lucide-react";
 
-type Shape = "wayfarer" | "aviator" | "round" | "catEye"
-type Color = "black" | "grey" | "brown"
-type Size = "S" | "M" | "L"
-type View = "front" | "left" | "right" | "back"
+type Shape = "wayfarer" | "aviator" | "rectangular" | "round" | "cat-eye";
+type Color = "black" | "brown" | "grey";
+type Size = "small" | "medium" | "large";
 
-const views: { id: View; label: string; angle: number }[] = [
-  { id: "front", label: "Front facing", angle: 0 },
-  { id: "left", label: "Left side", angle: -Math.PI / 2 },
-  { id: "right", label: "Right side", angle: Math.PI / 2 },
-  { id: "back", label: "Back side", angle: Math.PI },
-]
+const shapes: { id: Shape; label: string }[] = [
+  { id: "wayfarer", label: "Wayfarer" },
+  { id: "aviator", label: "Aviator" },
+  { id: "rectangular", label: "Rectangular" },
+  { id: "round", label: "Round" },
+  { id: "cat-eye", label: "Cat-eye" },
+];
+const colors: { id: Color; label: string; value: string }[] = [
+  { id: "black", label: "Black", value: "#20201e" },
+  { id: "brown", label: "Brown", value: "#714d35" },
+  { id: "grey", label: "Grey", value: "#777b7e" },
+];
+const sizes: { id: Size; label: string; note: string }[] = [
+  { id: "small", label: "Small", note: "49 mm" },
+  { id: "medium", label: "Medium", note: "52 mm" },
+  { id: "large", label: "Large", note: "55 mm" },
+];
 
-const shapes: { id: Shape; label: string; path: string }[] = [
-  { id: "wayfarer", label: "Wayfarer", path: "M18 42 Q18 32 28 32 H84 Q94 32 94 42 L90 102 Q89 112 79 114 H33 Q23 112 22 102 Z" },
-  { id: "aviator", label: "Aviator", path: "M18 42 Q18 31 30 30 H82 Q94 31 94 42 L88 92 Q83 112 56 118 Q29 112 24 92 Z" },
-  { id: "round", label: "Round", path: "M56 28 A43 43 0 1 1 56 114 A43 43 0 1 1 56 28" },
-  { id: "catEye", label: "Cat-eye", path: "M12 45 L28 31 Q51 24 74 34 Q87 28 96 39 L92 99 Q89 112 79 114 H33 Q22 112 20 99 Z" },
-]
+const shapePath: Record<Shape, string> = {
+  wayfarer: "M18 46 Q20 38 30 38 H83 Q92 38 94 46 L90 105 Q89 114 80 115 H32 Q22 114 21 105 Z",
+  aviator: "M18 45 Q18 35 30 34 H83 Q94 35 94 45 L88 98 Q83 116 56 122 Q29 116 24 98 Z",
+  rectangular: "M20 43 Q20 38 26 38 H88 Q94 38 94 43 V104 Q94 110 88 110 H26 Q20 110 20 104 Z",
+  round: "M56 32 A43 43 0 1 1 56 118 A43 43 0 1 1 56 32",
+  "cat-eye": "M13 48 L30 35 Q54 28 78 38 Q87 35 94 40 L94 101 Q91 113 80 116 H32 Q21 113 20 101 Z",
+};
 
-const colors: { id: Color; label: string; hex: string }[] = [
-  { id: "black", label: "Black", hex: "#20211f" },
-  { id: "grey", label: "Grey", hex: "#777875" },
-  { id: "brown", label: "Brown", hex: "#815b3b" },
-]
-
-const sizes: { id: Size; label: string }[] = [
-  { id: "S", label: "Small" },
-  { id: "M", label: "Medium" },
-  { id: "L", label: "Large" },
-]
-
-function Choice({ label, selected, onClick, detail }: { label: string; selected: boolean; onClick: () => void; detail?: string }) {
-  return <button type="button" onClick={onClick} className={`choice ${selected ? "choice-selected" : ""}`} aria-pressed={selected}>
-    <span><strong>{label}</strong>{detail && <small>{detail}</small>}</span>
-    <span className={`choice-check ${selected ? "checked" : ""}`}>{selected && <Check size={12} />}</span>
-  </button>
+function ChoiceButton({ selected, label, onClick, children }: { selected: boolean; label: string; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button type="button" aria-pressed={selected} onClick={onClick} className={`choice ${selected ? "choice-selected" : ""}`}>
+      {children}
+      <span>{label}</span>
+    </button>
+  );
 }
 
-function Swatch({ color, selected, onClick }: { color: typeof colors[number]; selected: boolean; onClick: () => void }) {
-  return <button type="button" aria-label={color.label} title={color.label} onClick={onClick} className={`swatch ${selected ? "swatch-selected" : ""}`} style={{ background: color.hex }}>{selected && <Check size={16} />}</button>
-}
-
-const lensProfiles: Record<Shape, [number, number][]> = {
-  wayfarer: [[-0.82, 0.62], [0.72, 0.62], [0.84, 0.42], [0.7, -0.62], [-0.66, -0.62], [-0.84, 0.3]],
-  aviator: [[-0.78, 0.58], [0.78, 0.58], [0.68, 0.12], [0.45, -0.56], [0, -0.78], [-0.45, -0.56], [-0.68, 0.12]],
-  round: [[0, 0.82], [0.58, 0.58], [0.82, 0], [0.58, -0.58], [0, -0.82], [-0.58, -0.58], [-0.82, 0], [-0.58, 0.58]],
-  catEye: [[-0.88, 0.55], [-0.45, 0.78], [0.18, 0.62], [0.78, 0.7], [0.86, 0.25], [0.68, -0.58], [-0.62, -0.58], [-0.82, 0.08]],
-}
-
-function Lens({ x, frame, lens, shape }: { x: number; frame: string; lens: string; shape: Shape }) { // ShapeGeometry keeps each selected silhouette declarative and R3F-safe.
-  const profile = useMemo(() => { const outline = new THREE.Shape(); lensProfiles[shape].forEach(([px, py], index) => index === 0 ? outline.moveTo(px, py) : outline.lineTo(px, py)); outline.closePath(); return outline }, [shape])
-  return <group position={[x, 0, 0]}>
-    <mesh position={[0, 0, 0.02]} scale={[1.1, 1.1, 1]}><shapeGeometry args={[profile]} /><meshPhysicalMaterial color={frame} roughness={0.32} clearcoat={0.65} /></mesh>
-    <mesh position={[0, 0, 0.08]}><shapeGeometry args={[profile]} /><meshPhysicalMaterial color={lens} transmission={1} roughness={0.05} thickness={0.5} ior={1.5} clearcoat={1} transparent opacity={0.9} /></mesh>
-  </group>
-}
-
-function SunglassesModel({ shape, frameColor, lensColor, size, engraving, viewAngle }: { shape: Shape; frameColor: Color; lensColor: Color; size: Size; engraving: string; viewAngle: number }) {
-  const group = useRef<THREE.Group>(null)
-  const frame = colors.find(item => item.id === frameColor)?.hex ?? colors[0].hex
-  const lens = colors.find(item => item.id === lensColor)?.hex ?? colors[1].hex
-  const scale = size === "S" ? 0.82 : size === "L" ? 1.1 : 0.96
-  useFrame((_, delta) => { if (group.current) { const target = viewAngle; let difference = target - group.current.rotation.y; difference = Math.atan2(Math.sin(difference), Math.cos(difference)); group.current.rotation.y += difference * Math.min(delta * 5, 1) } })
-  return <group ref={group} scale={scale} rotation={[0, 0, 0]}>
-    <Lens x={-1.02} frame={frame} lens={lens} shape={shape} /><Lens x={1.02} frame={frame} lens={lens} shape={shape} />
-    <mesh position={[0, 0, 0]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.08, 0.08, 0.72, 24]} /><meshPhysicalMaterial color={frame} roughness={0.35} clearcoat={0.6} /></mesh>
-    <mesh position={[-0.1, 0, 0]}><sphereGeometry args={[0.13, 24, 16]} /><meshPhysicalMaterial color={frame} roughness={0.3} clearcoat={0.6} /></mesh><mesh position={[0.1, 0, 0]}><sphereGeometry args={[0.13, 24, 16]} /><meshPhysicalMaterial color={frame} roughness={0.3} clearcoat={0.6} /></mesh>
-    <mesh position={[-1.95, 0, -0.03]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.07, 0.07, 1.2, 20]} /><meshPhysicalMaterial color={frame} roughness={0.35} clearcoat={0.6} /></mesh><mesh position={[1.95, 0, -0.03]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.07, 0.07, 1.2, 20]} /><meshPhysicalMaterial color={frame} roughness={0.35} clearcoat={0.6} /></mesh>
-    <mesh position={[-2.58, 0, -0.03]} rotation={[0, 0, Math.PI / 2]}><boxGeometry args={[0.18, 0.22, 0.2]} /><meshPhysicalMaterial color={frame} roughness={0.28} clearcoat={0.7} /></mesh><mesh position={[2.58, 0, -0.03]} rotation={[0, 0, Math.PI / 2]}><boxGeometry args={[0.18, 0.22, 0.2]} /><meshPhysicalMaterial color={frame} roughness={0.28} clearcoat={0.7} /></mesh>
-    <mesh position={[-0.38, -0.27, 0.18]} scale={[0.12, 0.2, 0.08]}><sphereGeometry args={[1, 20, 12]} /><meshPhysicalMaterial color="#d9c5aa" roughness={0.55} /></mesh><mesh position={[0.38, -0.27, 0.18]} scale={[0.12, 0.2, 0.08]}><sphereGeometry args={[1, 20, 12]} /><meshPhysicalMaterial color="#d9c5aa" roughness={0.55} /></mesh>
-    <mesh position={[-0.52, 0.02, 0.08]} rotation={[0, 0, -0.18]}><cylinderGeometry args={[0.045, 0.045, 0.42, 18]} /><meshPhysicalMaterial color={frame} roughness={0.3} /></mesh><mesh position={[0.52, 0.02, 0.08]} rotation={[0, 0, 0.18]}><cylinderGeometry args={[0.045, 0.045, 0.42, 18]} /><meshPhysicalMaterial color={frame} roughness={0.3} /></mesh>
-    {engraving && <mesh position={[0, -1.25, 0.08]} scale={[Math.min(0.8, engraving.length * 0.055), 0.025, 0.015]}><boxGeometry args={[1, 1, 1]} /><meshPhysicalMaterial color="#ffffff" roughness={0.35} /></mesh>}
-  </group>
-}
-
-function FramePreview({ shape, frameColor, lensColor, size, engraving, viewAngle }: { shape: Shape; frameColor: Color; lensColor: Color; size: Size; engraving: string; viewAngle: number }) {
-  return <div className="preview-wrap"><Canvas fallback={<Loader />} camera={{ position: [0, 0.1, 5], fov: 36 }} dpr={[1, 2]}><ambientLight intensity={0.8} /><directionalLight position={[2, 3, 4]} intensity={1.4} /><SunglassesModel shape={shape} frameColor={frameColor} lensColor={lensColor} size={size} engraving={engraving} viewAngle={viewAngle} /><ContactShadows position={[0, -1.2, 0]} opacity={0.3} scale={5} blur={2} /><Suspense fallback={null}><Environment preset="studio" /></Suspense><OrbitControls enablePan={false} minDistance={2} maxDistance={6} /></Canvas><Loader /></div>
+function FramePreview({ shape, frameColor, lensColor, engraving, size }: { shape: Shape; frameColor: Color; lensColor: Color; engraving: string; size: Size }) {
+  const frame = colors.find((item) => item.id === frameColor)?.value ?? colors[0].value;
+  const lens = colors.find((item) => item.id === lensColor)?.value ?? colors[2].value;
+  const scale = size === "small" ? 0.86 : size === "large" ? 1.08 : 1;
+  return (
+    <div className="preview-stage">
+      <div className="preview-copy"><span>YOUR FRAME</span><strong>Made to be yours.</strong></div>
+      <svg className="frame-svg" viewBox="0 0 200 150" role="img" aria-label={`${shape} frame preview`} style={{ transform: `scale(${scale})` }}>
+        <defs><linearGradient id="lens-glow" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor={lens} stopOpacity=".55" /><stop offset="1" stopColor={lens} stopOpacity=".18" /></linearGradient></defs>
+        <g fill="url(#lens-glow)" stroke={frame} strokeWidth="6" strokeLinejoin="round">
+          <path d={shapePath[shape]} transform="translate(-1 0)" />
+          <path d={shapePath[shape]} transform="translate(1 0) scale(-1 1) translate(-198 0)" />
+        </g>
+        <path d="M99 54 Q100 47 101 54" fill="none" stroke={frame} strokeWidth="6" strokeLinecap="round" />
+        <path d="M39 51 L19 42 M159 51 L181 42" fill="none" stroke={frame} strokeWidth="6" strokeLinecap="round" />
+        {engraving && <text x="100" y="140" textAnchor="middle" fill={frame} fontSize="7" letterSpacing="2">{engraving.toUpperCase()}</text>}
+      </svg>
+      <div className="preview-caption"><span>Front-facing preview</span><span>{size} fit</span></div>
+    </div>
+  );
 }
 
 export default function App() {
-  const [shape, setShape] = useState<Shape>("wayfarer")
-  const [frameColor, setFrameColor] = useState<Color>("black")
-  const [lensColor, setLensColor] = useState<Color>("grey")
-  const [size, setSize] = useState<Size>("M")
-  const [engraving, setEngraving] = useState("")
-  const [view, setView] = useState<View>("front")
-  const [submitted, setSubmitted] = useState(false)
+  const [shape, setShape] = useState<Shape>("wayfarer");
+  const [frameColor, setFrameColor] = useState<Color>("black");
+  const [lensColor, setLensColor] = useState<Color>("grey");
+  const [size, setSize] = useState<Size>("medium");
+  const [engraving, setEngraving] = useState("");
+  const [submitted, setSubmitted] = useState(false);
 
-  if (submitted) return <main className="complete-page"><section className="complete-card"><div className="complete-icon"><Check /></div><p>eyecare custom studio</p><h1>Your frame is ready.</h1><button type="button" onClick={() => setSubmitted(false)}>Edit selection</button></section></main>
+  if (submitted) return <main className="success"><div className="success-card"><div className="success-mark"><Check size={25} /></div><p className="eyebrow">Your design is saved</p><h1>Beautifully, <em>uniquely</em> yours.</h1><p>We&apos;ve captured your custom frame selections{engraving ? ` with “${engraving}” engraved.` : "."}</p><button type="button" className="text-button" onClick={() => setSubmitted(false)}>Edit design</button></div></main>;
 
-  return <main className="customizer-page">
-    <section className="preview-panel"><div className="brand">eyecare<span>.</span></div><div className="mode-pill"><Move3d size={14} /> Interactive 3D</div><div className="preview-content"><p className="eyebrow">FRAME STUDIO</p><h1>Make it yours.</h1><FramePreview shape={shape} frameColor={frameColor} lensColor={lensColor} size={size} engraving={engraving} viewAngle={views.find(item => item.id === view)?.angle ?? 0} /><div className="view-selector" aria-label="View angle">{views.map(item => <button key={item.id} type="button" className={view === item.id ? "view-selected" : ""} onClick={() => setView(item.id)}>{item.label}</button>)}</div></div></section>
-    <section className="controls-panel"><div className="controls-inner"><div className="section-kicker">01 / CUSTOMIZE</div><h2>Choose your frame</h2><div className="control-group"><h3>Frame shape</h3><div className="choice-grid">{shapes.map(item => <Choice key={item.id} label={item.label} selected={shape === item.id} onClick={() => setShape(item.id)} />)}</div></div><div className="control-group"><h3>Frame color</h3><div className="swatch-row">{colors.map(color => <Swatch key={color.id} color={color} selected={frameColor === color.id} onClick={() => setFrameColor(color.id)} />)}</div><div className="swatch-labels">{colors.map(color => <span key={color.id}>{color.label}</span>)}</div></div><div className="control-group"><h3>Lens color</h3><div className="swatch-row">{colors.map(color => <Swatch key={color.id} color={color} selected={lensColor === color.id} onClick={() => setLensColor(color.id)} />)}</div><div className="swatch-labels">{colors.map(color => <span key={color.id}>{color.label}</span>)}</div></div><div className="control-group"><h3>Fit &amp; sizing <small>Overall size</small></h3><div className="choice-grid size-grid">{sizes.map(item => <Choice key={item.id} label={item.label} detail={item.id} selected={size === item.id} onClick={() => setSize(item.id)} />)}</div></div><div className="control-group add-ons"><h3>Add-ons</h3><label htmlFor="engraving">Engraved Name or Initials <span>Optional</span></label><input id="engraving" maxLength={14} value={engraving} onChange={event => setEngraving(event.target.value)} placeholder="Enter name or initials" /></div><button type="button" className="proceed-button" onClick={() => setSubmitted(true)}>Click here to proceed <span>→</span></button></div></section>
-  </main>
+  return (
+    <main className="app-shell">
+      <section className="preview-panel"><header><div className="brand">eye<span>care</span><b>.</b></div><span className="step">01 <i /> 01</span></header><FramePreview shape={shape} frameColor={frameColor} lensColor={lensColor} engraving={engraving} size={size} /><p className="preview-note">A considered frame, designed around you.</p></section>
+      <section className="controls-panel"><div className="controls-inner"><div className="intro"><p className="eyebrow">Custom eyewear</p><h1>Find your <em>perfect</em> frame.</h1><p>Choose the details that make it unmistakably yours.</p></div>
+        <div className="control-group"><label className="group-label">Frame shape</label><div className="shape-grid">{shapes.map((item) => <ChoiceButton key={item.id} selected={shape === item.id} label={item.label} onClick={() => setShape(item.id)}><span className={`shape-icon ${item.id}`} /></ChoiceButton>)}</div></div>
+        <div className="control-group"><label className="group-label">Frame color</label><div className="swatch-row">{colors.map((item) => <ChoiceButton key={item.id} selected={frameColor === item.id} label={item.label} onClick={() => setFrameColor(item.id)}><span className="swatch" style={{ backgroundColor: item.value }} /></ChoiceButton>)}</div></div>
+        <div className="control-group"><label className="group-label">Lens tint</label><div className="swatch-row">{colors.map((item) => <ChoiceButton key={item.id} selected={lensColor === item.id} label={item.label} onClick={() => setLensColor(item.id)}><span className="swatch lens-swatch" style={{ backgroundColor: item.value }} /></ChoiceButton>)}</div></div>
+        <div className="control-group"><label className="group-label">Size</label><div className="size-row">{sizes.map((item) => <button type="button" key={item.id} aria-pressed={size === item.id} onClick={() => setSize(item.id)} className={`size-button ${size === item.id ? "selected" : ""}`}><strong>{item.label}</strong><small>{item.note}</small></button>)}</div></div>
+        <div className="control-group engraving"><label className="group-label" htmlFor="engraving">Engraved name or initials <small>Optional</small></label><input id="engraving" maxLength={14} value={engraving} onChange={(event) => setEngraving(event.target.value)} placeholder="e.g. A. KIM" /><span>{engraving.length}/14</span></div>
+        <button type="button" className="proceed-button" onClick={() => setSubmitted(true)}>Click here to proceed <ArrowRight size={18} /></button>
+      </div></section>
+    </main>
+  );
 }
